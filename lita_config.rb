@@ -1,3 +1,18 @@
+require 'bundler'
+
+module Lita
+  def self.env
+    ENV["LITA_ENV"] || :development
+  end
+
+  def self.env?(env=:development)
+    self.env == env
+  end
+end
+
+Bundler.require(:default, Lita::env)
+
+
 $:.unshift(File.expand_path("lita-zooniverse-projects/lib", File.dirname(__FILE__)))
 puts $:.inspect
 
@@ -18,12 +33,14 @@ Lita.configure do |config|
   # What is considered a user ID will change depending on which adapter you use.
   # config.robot.admins = ["1", "2"]
 
-  # The adapter you want to connect with. Make sure you've added the
-  # appropriate gem to the Gemfile.
-  config.robot.adapter = :slack
+  if Lita::env?(:production)
+    # The adapter you want to connect with. Make sure you've added the
+    # appropriate gem to the Gemfile.
+    config.robot.adapter = :slack
 
-  ## Example: Set options for the chosen adapter.
-  config.adapters.slack.token = ENV["SLACK_TOKEN"]
+    ## Example: Set options for the chosen adapter.
+    config.adapters.slack.token = ENV["SLACK_TOKEN"]
+  end
 
   ## Example: Set options for the Redis connection.
   # config.redis.host = "127.0.0.1"
