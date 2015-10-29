@@ -1,4 +1,5 @@
-require 'httparty'
+require_relative '../api/panoptes_project'
+require_relative '../api/ouroboros_project'
 
 module Lita
   module Handlers
@@ -7,20 +8,23 @@ module Lita
       route(/^project\s+(.+)/, :project)
 
       def project(response)
-        results = JSON.parse(HTTParty.get("https://www.zooniverse.org/api/projects", 
-       		      headers: {"Content-Type" => "application/json", 
-		      "Accept" => "application/vnd.api+json; version=1"},
-		      query: {search: response.matches[0]}))
-	projects = results["projects"].map do |project|
-          url = "https://www.zooniverse.org/projects/#{project["slug"]}"
-	  "#{url} -- #{project["id"]} -- #{project["display_name"]} (classifications: #{project["classifications_count"]}, classifiers: #{project["classifiers_count"]}, live: #{project["live"]})"
-	end
+        search = response.matches[0]
+        projects = Api::OuroborosProject.new(search).projects
+        projects << Api::PanoptesProject.new(search).projects
+        projects.flatten!
 
-	if projects.size > 0
+        if projects.size > 0
           response.reply(projects.join("\n"))
         else
-  	  response.reply("I just canna DO IT! I just dinna have the poower!")
+          response.reply(empty_response)
         end
+      end
+
+      def empty_response
+        [
+          "I just canna DO IT! I just dinna have the poower!",
+          "I can't see the project, I have failed you."
+        ].sample
       end
 
       Lita.register_handler(self)
