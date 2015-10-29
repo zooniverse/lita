@@ -1,7 +1,10 @@
 source "https://rubygems.org"
 
 gem "lita"
-gem "lita-slack"
+
+group :production do
+  gem "lita-slack"
+end
 
 # Uncomment to use the IRC adapter
 # gem "lita-irc"
@@ -20,5 +23,8 @@ gem "lita-pugbomb"
 gem "lita-flip"
 gem "lita-cron"
 
-gem 'pry'
 gem "httparty"
+
+group :development do
+  gem 'pry'
+end
