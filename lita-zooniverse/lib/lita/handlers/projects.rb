@@ -3,7 +3,7 @@ require_relative '../api/ouroboros_project'
 
 module Lita
   module Handlers
-    class ZooniverseProjects < Handler
+    class Projects < Handler
       # insert handler code here
       route(/^project\s+(.+)/, :project)
 

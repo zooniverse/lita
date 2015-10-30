@@ -13,7 +13,7 @@ end
 Bundler.require(:default, Lita::env)
 
 
-$:.unshift(File.expand_path("lita-zooniverse-projects/lib", File.dirname(__FILE__)))
+$:.unshift(File.expand_path("lita-zooniverse/lib", File.dirname(__FILE__)))
 puts $:.inspect
 
 Lita.configure do |config|
@@ -51,4 +51,4 @@ Lita.configure do |config|
   # config.handlers.some_handler.some_config_key = "value"
 end
 
-require_relative 'lita-zooniverse-projects/lib/lita-zooniverse-projects'
+require_relative 'lita-zoo/lib/lita-zooniverse'
