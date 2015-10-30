@@ -2,7 +2,7 @@ require 'bundler'
 
 module Lita
   def self.env
-    ENV["LITA_ENV"] || :development
+    ENV["LITA_ENV"].to_sym || :development
   end
 
   def self.env?(env=:development)
@@ -12,9 +12,7 @@ end
 
 Bundler.require(:default, Lita::env)
 
-
 $:.unshift(File.expand_path("lita-zooniverse/lib", File.dirname(__FILE__)))
-puts $:.inspect
 
 Lita.configure do |config|
   # The name your robot will use.
