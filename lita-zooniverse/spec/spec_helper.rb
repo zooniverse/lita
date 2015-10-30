@@ -1,4 +1,4 @@
-require "lita-zooniverse-projects"
+require "lita-zooniverse"
 require "lita/rspec"
 
 # A compatibility mode is provided for older plugins upgrading from Lita 3. Since this plugin

@@ -22,8 +22,7 @@ gem "lita-applause"
 gem "lita-pugbomb"
 gem "lita-flip"
 gem "lita-cron"
-
-gem "httparty"
+gem "lita-zooniverse", path: "lita-zooniverse"
 
 group :development do
   gem 'pry'

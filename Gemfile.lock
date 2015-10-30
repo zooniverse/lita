@@ -1,3 +1,10 @@
+PATH
+  remote: lita-zooniverse
+  specs:
+    lita-zooniverse (0.1.0)
+      httparty
+      lita (>= 4.6)
+
 GEM
   remote: https://rubygems.org/
   specs:
@@ -94,7 +101,6 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
-  httparty
   lita
   lita-applause
   lita-baby_elephant
@@ -107,4 +113,8 @@ DEPENDENCIES
   lita-lunch
   lita-pugbomb
   lita-slack
+  lita-zooniverse!
   pry
+
+BUNDLED WITH
+   1.10.6

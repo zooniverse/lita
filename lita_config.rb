@@ -51,4 +51,4 @@ Lita.configure do |config|
   # config.handlers.some_handler.some_config_key = "value"
 end
 
-require_relative 'lita-zoo/lib/lita-zooniverse'
+require_relative 'lita-zooniverse/lib/lita-zooniverse'
