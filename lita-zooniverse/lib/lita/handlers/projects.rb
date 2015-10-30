@@ -5,7 +5,7 @@ module Lita
   module Handlers
     class Projects < Handler
       # insert handler code here
-      route(/^project\s+(.+)/, :project)
+      route(/^project\s+(.+)/, :project, command: true)
 
       def project(response)
         search = response.matches[0]
