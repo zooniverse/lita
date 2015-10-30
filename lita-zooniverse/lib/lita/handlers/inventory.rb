@@ -4,12 +4,13 @@ module Lita
       config :size, default: 5
 
       # insert handler code here
-      route(/^take\s+(?<item>.+)/, :take, command: true)
+      route(/^take\s+(?<item>.+)/, :take)
       route(/^give me something/, :give, command: true)
       route(/^inventory\?/, :inventory, command: true)
+      route(/^invent something/, :invent, command: true)
 
       def take(response)
-        item = response.match_data[:item]
+        item = response.match_data[:item].strip
 
         if has_item?(item)
           response.reply([
@@ -17,8 +18,11 @@ module Lita
             "I already have #{item}",
             "But I've already got #{item}!"
           ].sample)
-        elsif dropped_item = add_item(item.strip)
-          response.reply("drops #{dropped_item} and takes #{item}.")
+        elsif dropped_item = add_item(item)
+          response.reply([
+            "drops #{dropped_item} and takes #{item}.",
+            "is now carrying #{item}, but dropped #{dropped_item}"
+          ].sample)
         else
           response.reply("takes #{item}.")
         end
@@ -44,6 +48,20 @@ module Lita
         end
       end
 
+      def invent(response)
+        action = [
+          "I fire $thing out of a giant cannon into $thing",
+          "combines $thing and $thing"
+        ].sample.gsub("$thing") { redis.srandmember("dictionary") }
+
+        result = [
+          "but they're incompatible. A blinding explosion follows!",
+          "and it actually worked! After a puff of smoke, $thing appears!"
+        ].sample.gsub("$thing") { redis.srandmember("dictionary") }
+
+        response.reply("#{action} #{result}")
+      end
+
       private
 
       def add_item(item)
@@ -51,7 +69,8 @@ module Lita
           dropped_item = drop_item
         end
 
-        redis.sadd("inventory", item.strip)
+        redis.sadd("inventory", item)
+        redis.sadd("dictionary", item)
         dropped_item
       end
 

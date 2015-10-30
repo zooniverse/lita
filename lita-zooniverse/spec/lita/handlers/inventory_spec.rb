@@ -74,4 +74,14 @@ describe Lita::Handlers::Inventory, lita_handler: true do
       expect(replies.last).to match("gives <@123> (one|two|three|four|five).")
     end
   end
+
+  describe 'inventions' do
+    it 'makes things' do
+      send_command("take one")
+      send_command("take two")
+      send_command("take three")
+      send_command("invent something")
+      expect(replies.last).to match("I fire (one|two|three) out of a giant cannon into (one|two|three) and it actually worked! After a puff of smoke, (one|two|three) appears!")
+    end
+  end
 end
