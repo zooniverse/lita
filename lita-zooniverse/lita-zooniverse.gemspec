@@ -1,5 +1,5 @@
 Gem::Specification.new do |spec|
-  spec.name          = "lita-zooniverse-projects"
+  spec.name          = "lita-zooniverse"
   spec.version       = "0.1.0"
   spec.authors       = ["TODO: Write your name"]
   spec.email         = ["TODO: Write your email address"]
