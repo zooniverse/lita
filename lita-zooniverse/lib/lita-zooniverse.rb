@@ -6,7 +6,6 @@ Lita.load_locales Dir[File.expand_path(
 
 require "lita/handlers/projects"
 require "lita/handlers/deployment"
-require "lita/handlers/inventory"
 
 Lita::Handlers::Projects.template_root File.expand_path(
   File.join("..", "..", "templates"),
