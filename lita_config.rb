@@ -40,8 +40,6 @@ Lita.configure do |config|
     config.adapters.slack.token = ENV["SLACK_TOKEN"]
   end
 
-  config.handlers.inventory.size = 20
-
   ## Example: Set options for the Redis connection.
   # config.redis.host = "127.0.0.1"
   # config.redis.port = 1234
