@@ -2,11 +2,11 @@ require 'bundler'
 
 module Lita
   def self.env
-    ENV["LITA_ENV"].to_sym || :development
+    ENV["LITA_ENV"] || :development
   end
 
   def self.env?(env=:development)
-    self.env == env
+    self.env.to_s == env.to_s
   end
 end
 

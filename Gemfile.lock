@@ -1,3 +1,11 @@
+GIT
+  remote: git@github.com:marten/lita-bucket.git
+  revision: cd301d78698899aba644b681305a61d8736aa2f6
+  specs:
+    lita-bucket (0.1.0)
+      a_vs_an
+      lita (>= 4.6)
+
 PATH
   remote: lita-zooniverse
   specs:
@@ -9,6 +17,7 @@ PATH
 GEM
   remote: https://rubygems.org/
   specs:
+    a_vs_an (0.1.0)
     addressable (2.3.8)
     coderay (1.1.0)
     eventmachine (1.0.8)
@@ -111,6 +120,7 @@ DEPENDENCIES
   lita
   lita-applause
   lita-baby_elephant
+  lita-bucket!
   lita-catfacts
   lita-catgif
   lita-cron
