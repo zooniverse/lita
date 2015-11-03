@@ -1,6 +1,6 @@
 GIT
   remote: git@github.com:marten/lita-bucket.git
-  revision: 24b2ccc4535cc4ea43529a50ea67148a766803d1
+  revision: d1da32ef061d9457233dcacf9ab09110dcf37e62
   specs:
     lita-bucket (0.1.0)
       a_vs_an

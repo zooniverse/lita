@@ -1,1 +1,3 @@
 .ruby-*
+.bundle
+.gems
