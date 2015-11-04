@@ -1,5 +1,5 @@
 GIT
-  remote: git@github.com:marten/lita-bucket.git
+  remote: https://github.com/marten/lita-bucket.git
   revision: 61672c9b01bcb917c64dd67ce22723632aecc0dc
   specs:
     lita-bucket (0.1.0)

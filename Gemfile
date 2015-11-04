@@ -23,7 +23,7 @@ gem "lita-pugbomb"
 gem "lita-flip"
 gem "lita-cron"
 gem "lita-zooniverse", path: "lita-zooniverse"
-gem 'lita-bucket', git: 'git@github.com:marten/lita-bucket.git'
+gem 'lita-bucket', git: 'https://github.com/marten/lita-bucket.git'
 
 group :development do
   gem 'pry'
