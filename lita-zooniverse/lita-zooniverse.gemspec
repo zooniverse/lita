@@ -17,6 +17,7 @@ Gem::Specification.new do |spec|
   spec.add_runtime_dependency "lita", ">= 4.6"
   spec.add_runtime_dependency "httparty"
   spec.add_runtime_dependency "octokit"
+  spec.add_runtime_dependency "jenkins_api_client"
 
   spec.add_development_dependency "bundler", "~> 1.3"
   spec.add_development_dependency "pry-byebug"

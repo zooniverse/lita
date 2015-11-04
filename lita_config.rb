@@ -11,6 +11,7 @@ module Lita
 end
 
 Bundler.require(:default, Lita::env)
+Dotenv.load
 
 $:.unshift(File.expand_path("lita-zooniverse/lib", File.dirname(__FILE__)))
 
@@ -40,13 +41,11 @@ Lita.configure do |config|
     config.adapters.slack.token = ENV["SLACK_TOKEN"]
   end
 
-  ## Example: Set options for the Redis connection.
   # config.redis.host = "127.0.0.1"
   # config.redis.port = 1234
 
-  ## Example: Set configuration for any loaded handlers. See the handler's
-  ## documentation for options.
-  # config.handlers.some_handler.some_config_key = "value"
+  config.handlers.deployment.jenkins_username = ENV["JENKINS_USERNAME"]
+  config.handlers.deployment.jenkins_password = ENV["JENKINS_PASSWORD"]
 end
 
 require_relative 'lita-zooniverse/lib/lita-zooniverse'

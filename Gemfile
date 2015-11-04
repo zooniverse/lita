@@ -25,6 +25,8 @@ gem "lita-cron"
 gem "lita-zooniverse", path: "lita-zooniverse"
 gem 'lita-bucket', git: 'https://github.com/marten/lita-bucket.git'
 
+gem 'dotenv'
+
 group :development do
   gem 'pry'
 end
