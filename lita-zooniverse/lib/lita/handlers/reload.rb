@@ -5,7 +5,7 @@ module Lita
   module Handlers
     class Reload < Handler
       # insert handler code here
-      route(/^reload$/, :status, command: true)
+      route(/^reload$/, :status, command: true, help: {"reload" => "Fetches the latest code, installs gems and restarts Lita."})
 
       def status(response)
         response.reply(`git checkout Gemfile.lock`)
