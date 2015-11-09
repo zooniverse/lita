@@ -6,7 +6,6 @@ module Lita
   module Handlers
     class Deployment < Handler
       BUILD_JOB  = "Build Panoptes Production AMI"
-      BUILD_JOB  = "HipChat Test"
       DEPLOY_JOB = "Deploy latest Panoptes Production build"
       RAKE_JOB   = "Run rake task"
 
