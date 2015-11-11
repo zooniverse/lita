@@ -1,6 +1,6 @@
 GIT
   remote: https://github.com/marten/lita-bucket.git
-  revision: 61672c9b01bcb917c64dd67ce22723632aecc0dc
+  revision: c8835e4bca02674695ce5391f4263cacea431b0a
   specs:
     lita-bucket (0.1.0)
       a_vs_an
@@ -98,7 +98,7 @@ GEM
       coderay (~> 1.1.0)
       method_source (~> 0.8.1)
       slop (~> 3.4)
-    puma (2.14.0)
+    puma (2.15.3)
     rack (1.6.4)
     rb-readline (0.5.3)
     read_it (0.0.2)
