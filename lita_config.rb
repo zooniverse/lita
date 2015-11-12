@@ -1,5 +1,4 @@
 require 'bundler'
-require_relative 'lita-zooniverse/lib/lita-zooniverse'
 
 Bundler.require(:default, Lita::env)
 Dotenv.load
@@ -38,3 +37,5 @@ Lita.configure do |config|
   config.handlers.deployment.jenkins_username = ENV["JENKINS_USERNAME"]
   config.handlers.deployment.jenkins_password = ENV["JENKINS_PASSWORD"]
 end
+
+require_relative 'lita-zooniverse/lib/lita-zooniverse'

@@ -1,6 +1,7 @@
 require 'httparty'
 require 'octokit'
 require 'jenkins_api_client'
+require_relative '../../../../lita_env'
 
 module Lita
   module Handlers
