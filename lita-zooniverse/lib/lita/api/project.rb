@@ -4,16 +4,14 @@ module Lita
   module Api
     module Project
 
-      attr_reader :search_query
+      attr_reader :project
 
-      def initialize(search_query)
-        @search_query = search_query
+      def initialize(project)
+        @project = project
       end
 
-      private
-
-      def api_headers
-        {"Content-Type" => "application/json", "Accept" => "application/json"}
+      def to_s
+        raise NotImplementedError.new
       end
     end
   end

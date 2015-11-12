@@ -9,9 +9,8 @@ module Lita
 
       def project(response)
         search = response.matches[0]
-        projects = Api::OuroborosProject.new(search).projects
-        projects << Api::PanoptesProject.new(search).projects
-        projects.flatten!
+        projects = Api::OuroborosProject.projects(search).map(&:to_s)
+        projects << Api::PanoptesProject.projects(search).map(&:to_s)
 
         if projects.size > 0
           response.reply(projects.join("\n"))

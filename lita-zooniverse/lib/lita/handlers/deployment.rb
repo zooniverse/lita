@@ -1,6 +1,7 @@
 require 'httparty'
 require 'octokit'
 require 'jenkins_api_client'
+require_relative '../../../../lita_env'
 
 module Lita
   module Handlers
@@ -10,8 +11,8 @@ module Lita
       RAKE_JOB   = "Run rake task"
 
       config :jenkins_url, default: 'https://jenkins.zooniverse.org'
-      config :jenkins_username, required: true
-      config :jenkins_password, required: true
+      config :jenkins_username, required: Lita::env?(:production)
+      config :jenkins_password, required: Lita::env?(:production)
 
       route(/^panoptes (status|version)/, :status, command: true, help: {"panoptes status" => "Returns the number of commits not deployed to production."})
       route(/^panoptes build/, :build, command: true, help: {"panoptes build" => "Triggers a build of a new AMI of *PRODUCTION* in Jenkins."})
