@@ -1,6 +1,7 @@
 # lita
+## Usage
 
-Currently runs on a machine in @marten's home. Tell him when you need updates deployed.
+Head over to the Wiki for docs and help.
 
 ## Development
 
@@ -18,3 +19,7 @@ Set the LITA_ENV variable to run in production mode on start `LITA_ENV=productio
 
 Note: If running in production mode then slack gem needs an token env var token
 and won't start without a valid one (see lita_config.rb).
+
+## Deployment
+
+Say `lita: lita deploy` in chat.
