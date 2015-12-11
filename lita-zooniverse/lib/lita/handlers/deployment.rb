@@ -11,6 +11,9 @@ module Lita
           build: "Build Panoptes Production AMI",
           deploy: "Deploy latest Panoptes Production build"
         },
+        "nero" => {
+          deploy: "Update Nero production"
+        }
         "stats" => {
           deploy: "Update Zoo Event Stats production"
         }
@@ -25,7 +28,8 @@ module Lita
       route(/^(panoptes) deploy/, :deploy, command: true, help: {"panoptes deploy" => "Triggers a deployment of *PRODUCTION* in Jenkins."})
       route(/^(panoptes) lock\s*(.*)/, :lock, command: true, help: {"panoptes lock REASON" => "Stops builds and deployments"})
       route(/^(panoptes) unlock/, :unlock, command: true, help: {"panoptes unlock" => "Lifts deployment restrictions"})
-      route(/^(stats) deploy/, :deploy, command: true, help: {"stats deploy" => "Deploys zoo-event-stats"})
+      route(/^(nero) deploy/, :deploy, command: true, help: {"nero deploy" => "Deploys https://github.com/zooniverse/nero"})
+      route(/^(stats) deploy/, :deploy, command: true, help: {"stats deploy" => "Deploys https://github.com/zooniverse/zoo-event-stats"})
       route(/^clear static cache/, :clear_static_cache, command: true, help: {"clear static cache" => "Clears the static cache (duh)"})
 
       def status(response)
