@@ -16,6 +16,9 @@ module Lita
         },
         "stats" => {
           deploy: "Update Zoo Event Stats production"
+        },
+        "aggregation" => {
+          deploy: "Update Panoptes production aggregation"
         }
       }
 
@@ -30,6 +33,7 @@ module Lita
       route(/^(panoptes) unlock/, :unlock, command: true, help: {"panoptes unlock" => "Lifts deployment restrictions"})
       route(/^(nero) deploy/, :deploy, command: true, help: {"nero deploy" => "Deploys https://github.com/zooniverse/nero"})
       route(/^(stats) deploy/, :deploy, command: true, help: {"stats deploy" => "Deploys https://github.com/zooniverse/zoo-event-stats"})
+      route(/^(aggregation) deploy/, :deploy, command: true, help: {"aggregation deploy" => "Deploys https://github.com/zooniverse/aggregation"})
       route(/^clear static cache/, :clear_static_cache, command: true, help: {"clear static cache" => "Clears the static cache (duh)"})
 
       def status(response)
