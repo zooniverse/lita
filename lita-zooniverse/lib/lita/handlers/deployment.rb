@@ -6,19 +6,26 @@ require_relative '../../../../lita_env'
 module Lita
   module Handlers
     class Deployment < Handler
-      BUILD_JOB  = "Build Panoptes Production AMI"
-      DEPLOY_JOB = "Deploy latest Panoptes Production build"
-      RAKE_JOB   = "Run rake task"
+      JOBS = {
+        "panoptes" => {
+          build: "Build Panoptes Production AMI",
+          deploy: "Deploy latest Panoptes Production build"
+        },
+        "stats" => {
+          deploy: "Update Zoo Event Stats production"
+        }
+      }
 
       config :jenkins_url, default: 'https://jenkins.zooniverse.org'
       config :jenkins_username, required: Lita::env?(:production)
       config :jenkins_password, required: Lita::env?(:production)
 
       route(/^panoptes (status|version)/, :status, command: true, help: {"panoptes status" => "Returns the number of commits not deployed to production."})
-      route(/^panoptes build/, :build, command: true, help: {"panoptes build" => "Triggers a build of a new AMI of *PRODUCTION* in Jenkins."})
-      route(/^panoptes deploy/, :deploy, command: true, help: {"panoptes deploy" => "Triggers a deployment of *PRODUCTION* in Jenkins."})
-      route(/^panoptes lock\s*(.*)/, :lock, command: true, help: {"panoptes lock REASON" => "Stops builds and deployments"})
-      route(/^panoptes unlock/, :unlock, command: true, help: {"panoptes unlock" => "Lifts deployment restrictions"})
+      route(/^(panoptes) build/, :build, command: true, help: {"panoptes build" => "Triggers a build of a new AMI of *PRODUCTION* in Jenkins."})
+      route(/^(panoptes) deploy/, :deploy, command: true, help: {"panoptes deploy" => "Triggers a deployment of *PRODUCTION* in Jenkins."})
+      route(/^(panoptes) lock\s*(.*)/, :lock, command: true, help: {"panoptes lock REASON" => "Stops builds and deployments"})
+      route(/^(panoptes) unlock/, :unlock, command: true, help: {"panoptes unlock" => "Lifts deployment restrictions"})
+      route(/^(stats) deploy/, :deploy, command: true, help: {"stats deploy" => "Deploys zoo-event-stats"})
       route(/^clear static cache/, :clear_static_cache, command: true, help: {"clear static cache" => "Clears the static cache (duh)"})
 
       def status(response)
@@ -36,27 +43,31 @@ module Lita
       end
 
       def build(response)
+        app, jobs = get_jobs(response)
         ensure_no_lock(response) or return
-        build_jenkins_job(response, BUILD_JOB)
+        build_jenkins_job(response, jobs[:build])
       end
 
       def deploy(response)
-        ensure_no_lock(response) or return
-        build_jenkins_job(response, DEPLOY_JOB)
+        app, jobs = get_jobs(response)
+        ensure_no_lock(app, response) or return
+        build_jenkins_job(response, jobs[:deploy])
       end
 
       def lock(response)
-        reason = response.matches[0][0]
+        app, jobs = get_jobs(response)
+        reason = response.matches[0][1]
         reason = reason.empty? ? "No reason given" : reason
-        redis.set("lock:reason", reason)
-        redis.set("lock:user", response.user.name)
+        redis.set("lock:#{app}:reason", reason)
+        redis.set("lock:#{app}:user", response.user.name)
         response.reply("None shall pass.")
       end
 
       def unlock(response)
+        app, jobs = get_jobs(response)
         if locked?
-          redis.del("lock:reason")
-          redis.del("lock:user")
+          redis.del("lock:#{app}:reason")
+          redis.del("lock:#{app}:user")
           response.reply("Unlocked.")
         else
           response.reply("Wasn't locked to begin with.")
@@ -69,9 +80,15 @@ module Lita
 
       private
 
-      def ensure_no_lock(response)
-        if lock = locked?
-          response.reply("Panoptes is version-locked by #{lock.user}: #{lock.reason}")
+      def get_jobs(response)
+        app = response.matches[0][0]
+        jobs = JOBS.fetch(app)
+        [app, jobs]
+      end
+
+      def ensure_no_lock(app, response)
+        if lock = locked?(app)
+          response.reply("#{app} is version-locked by #{lock.user}: #{lock.reason}")
           false
         else
           true
@@ -95,12 +112,12 @@ module Lita
         response.reply("#{job_name} couldn't be started.")
       end
 
-      def locked?
-        reason = redis.get("lock:reason")
-        user = redis.get("lock:user")
+      def locked?(app)
+        reason = redis.get("lock:#{app}:reason")
+        user = redis.get("lock:#{app}:user")
 
         if reason || user
-          OpenStruct.new(reason: reason, user: redis.get("lock:user"))
+          OpenStruct.new(reason: reason, user: redis.get("lock:#{app}:user"))
         end
       end
 
