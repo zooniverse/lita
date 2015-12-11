@@ -13,7 +13,7 @@ module Lita
         },
         "nero" => {
           deploy: "Update Nero production"
-        }
+        },
         "stats" => {
           deploy: "Update Zoo Event Stats production"
         }
