@@ -1,6 +1,7 @@
 require 'httparty'
 require 'octokit'
 require 'jenkins_api_client'
+require 'uri'
 require_relative '../../../../lita_env'
 
 module Lita
@@ -105,7 +106,7 @@ module Lita
         response.reply("#{job_name} starting... hang on while I get you a build number (might take up to 60 seconds).")
 
         build_number = jenkins.job.build(job_name, {}, {'build_start_timeout' => 60, 'cancel_on_build_start_timeout' => true})
-        response.reply("#{job_name} #{build_number} started.")
+        response.reply("#{job_name} #{build_number} started. Console output: #{config.jenkins_url}/job/#{URI.escape(job_name)}/#{build_number}/console")
 
         every(10) do |timer|
           details = jenkins.job.get_build_details(job_name, build_number)
