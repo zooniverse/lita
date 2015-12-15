@@ -50,7 +50,7 @@ module Lita
 
       def build(response)
         app, jobs = get_jobs(response)
-        ensure_no_lock(response) or return
+        ensure_no_lock(app, response) or return
         build_jenkins_job(response, jobs[:build])
       end
 
