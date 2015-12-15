@@ -37,8 +37,6 @@ module Lita
       route(/^clear static cache/, :clear_static_cache, command: true, help: {"clear static cache" => "Clears the static cache (duh)"})
 
       def status(response)
-        ensure_no_lock(response)
-
         deployed_version = HTTParty.get("https://panoptes.zooniverse.org/commit_id.txt").strip
         comparison = Octokit.compare("zooniverse/panoptes", deployed_version, "HEAD")
 
