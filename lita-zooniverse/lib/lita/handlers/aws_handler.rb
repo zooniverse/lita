@@ -34,7 +34,15 @@ module Lita
         if response_strings.empty?
           response.reply("Nothing found")
         else
-          response.reply(response_strings.join("\n"))
+          if robot.chat_service.respond_to?(:api)
+            robot.chat_service.api.send(:call_api, "chat.postMessage",
+              as_user: true,
+              channel: response.message.source.room,
+              parse: 'none',
+              text: response_strings.join("\n"))
+          else
+            response.reply(response_strings.join("\n"))
+          end
         end
       end
 

@@ -27,6 +27,6 @@ gem 'lita-bucket', git: 'https://github.com/marten/lita-bucket.git'
 
 gem 'dotenv'
 
+gem 'pry'
 group :development do
-  gem 'pry'
 end
