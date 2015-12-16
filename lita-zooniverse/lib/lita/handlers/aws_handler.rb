@@ -27,7 +27,7 @@ module Lita
 
           str = ""
           str += "> `#{instance.instance_id}`"
-          str += " at `#{instance.public_ip_address.to_s.ljust(15)}`" if instance.public_ip_address
+          str += " at `#{instance.public_dns_name}`" if instance.public_dns_name
           str += " (#{instance.state.name}, #{instance.instance_type}, #{name})"
         end
 
