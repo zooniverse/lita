@@ -21,10 +21,14 @@ module Lita
           end
         end
 
-        matches.sort_by {|instance| instance.state.name }.each do |instance|
-          tags = instance.tags.map {|tag| [tag.key, tag.value] }.sort_by(&:first).to_h.inspect
-          response.reply("> #{instance.public_dns_name} (#{instance.state.name}, #{instance.instance_type}, #{tags})")
+        response_strings = matches.sort_by {|instance| instance.state.name }.map do |instance|
+          name_tag = instance.tags.find {|tag| tag.key.downcase == "name" }
+          name = name_tag ? name_tag.value : ""
+
+          "> #{instance.public_dns_name} (#{instance.state.name}, #{instance.instance_type}, #{name})"
         end
+        
+        response.reply(response_strings.join("\n"))
       end
 
       private

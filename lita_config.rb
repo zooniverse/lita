@@ -37,6 +37,7 @@ Lita.configure do |config|
   config.handlers.factoid_handler.chance = 0.2
   config.handlers.deployment.jenkins_username = ENV["JENKINS_USERNAME"]
   config.handlers.deployment.jenkins_password = ENV["JENKINS_PASSWORD"]
+  config.handlers.karma.link_karma_threshold = nil
 end
 
 require_relative 'lita-zooniverse/lib/lita-zooniverse'
