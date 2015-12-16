@@ -25,7 +25,10 @@ module Lita
           name_tag = instance.tags.find {|tag| tag.key.downcase == "name" }
           name = name_tag ? name_tag.value : ""
 
-          "> `#{instance.instance_id}` -- #{instance.public_ip_address} (#{instance.state.name}, #{instance.instance_type}, #{name})"
+          str = ""
+          str += "> `#{instance.instance_id}`"
+          str += " at `#{instance.public_ip_address.to_s.ljust(15)}`" if instance.public_ip_address
+          str += " (#{instance.state.name}, #{instance.instance_type}, #{name})"
         end
 
         if response_strings.empty?
