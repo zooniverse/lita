@@ -25,10 +25,14 @@ module Lita
           name_tag = instance.tags.find {|tag| tag.key.downcase == "name" }
           name = name_tag ? name_tag.value : ""
 
-          "> #{instance.public_dns_name} (#{instance.state.name}, #{instance.instance_type}, #{name})"
+          "> `#{instance.instance_id}` -- #{instance.public_ip_address} (#{instance.state.name}, #{instance.instance_type}, #{name})"
         end
-        
-        response.reply(response_strings.join("\n"))
+
+        if response_strings.empty?
+          response.reply("Nothing found")
+        else
+          response.reply(response_strings.join("\n"))
+        end
       end
 
       private
