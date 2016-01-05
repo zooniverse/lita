@@ -10,6 +10,7 @@ module Lita
       JOBS = {
         "panoptes" => {
           build: "Build Panoptes Production AMI",
+          migrate: "Migrate Production Panoptes Database",
           deploy: "Deploy latest Panoptes Production build"
         },
         "nero" => {
@@ -29,6 +30,7 @@ module Lita
 
       route(/^panoptes (status|version)/, :status, command: true, help: {"panoptes status" => "Returns the number of commits not deployed to production."})
       route(/^(panoptes) build/, :build, command: true, help: {"panoptes build" => "Triggers a build of a new AMI of *PRODUCTION* in Jenkins."})
+      route(/^(panoptes) migrate/, :migrate, command: true, help: {"panoptes migrate" => "Runs database migrations for Panoptes *PRODUCTION* in Jenkins."})
       route(/^(panoptes) deploy/, :deploy, command: true, help: {"panoptes deploy" => "Triggers a deployment of *PRODUCTION* in Jenkins."})
       route(/^(panoptes) lock\s*(.*)/, :lock, command: true, help: {"panoptes lock REASON" => "Stops builds and deployments"})
       route(/^(panoptes) unlock/, :unlock, command: true, help: {"panoptes unlock" => "Lifts deployment restrictions"})
@@ -53,6 +55,12 @@ module Lita
         app, jobs = get_jobs(response)
         ensure_no_lock(app, response) or return
         build_jenkins_job(response, jobs[:build])
+      end
+
+      def migrate(response)
+        app, jobs = get_jobs(response)
+        ensure_no_lock(app, response) or return
+        build_jenkins_job(response, jobs[:migrate])
       end
 
       def deploy(response)
