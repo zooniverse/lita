@@ -80,7 +80,7 @@ module Lita
 
       def unlock(response)
         app, jobs = get_jobs(response)
-        if locked?
+        if locked?(app)
           redis.del("lock:#{app}:reason")
           redis.del("lock:#{app}:user")
           response.reply("Unlocked.")
