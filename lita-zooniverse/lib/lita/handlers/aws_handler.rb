@@ -4,7 +4,7 @@ module Lita
   module Handlers
     class AWSHandler < Handler
       # insert handler code here
-      route(/^aws ip (.*)$/, :ip, command: true, help: {"aws instances SEARCH_TERM" => "Looks for matching instances on AWS, and prints their IPs"})
+      route(/^aws ip (.*)$/, :ip, command: true, help: {"aws ip SEARCH_TERM" => "Looks for matching instances on AWS, and prints their IPs"})
 
       def ip(response)
         terms = response.matches[0][0].downcase.split(" ")
