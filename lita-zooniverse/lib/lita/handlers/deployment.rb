@@ -28,6 +28,8 @@ module Lita
       config :jenkins_username, required: Lita::env?(:production)
       config :jenkins_password, required: Lita::env?(:production)
 
+      route(/^(status|build|migrate|deploy|lock|unlock)/, :reversed, command: true)
+
       route(/^panoptes (status|version)/, :status, command: true, help: {"panoptes status" => "Returns the number of commits not deployed to production."})
       route(/^(panoptes) build/, :build, command: true, help: {"panoptes build" => "Triggers a build of a new AMI of *PRODUCTION* in Jenkins."})
       route(/^(panoptes) migrate/, :migrate, command: true, help: {"panoptes migrate" => "Runs database migrations for Panoptes *PRODUCTION* in Jenkins."})
@@ -91,6 +93,10 @@ module Lita
 
       def clear_static_cache(response)
         build_jenkins_job(response, "Clear static cache")
+      end
+
+      def reversed(response)
+        response.reply("Reverse those please.")
       end
 
       private
