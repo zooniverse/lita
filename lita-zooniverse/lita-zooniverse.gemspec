@@ -20,6 +20,7 @@ Gem::Specification.new do |spec|
   spec.add_runtime_dependency "jenkins_api_client"
   spec.add_runtime_dependency "aws-sdk", ">= 2"
   spec.add_runtime_dependency "a_vs_an"
+  spec.add_runtime_dependency "panoptes-client"
 
   spec.add_development_dependency "bundler", "~> 1.3"
   spec.add_development_dependency "pry-byebug"

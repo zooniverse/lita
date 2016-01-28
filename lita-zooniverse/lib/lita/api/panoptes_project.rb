@@ -1,3 +1,5 @@
+require 'panoptes/client'
+
 require_relative 'project'
 
 module Lita
@@ -6,21 +8,14 @@ module Lita
 
       include Api::Project
 
-      def self.api_headers
-        {
-          "Content-Type" => "application/json",
-          "Accept" => "application/vnd.api+json; version=1"
-        }
-      end
-
-      def self.api_host
-        @api_host ||= "https://www.zooniverse.org/api/projects"
+      def self.client
+        @client ||= Panoptes::Client.new
       end
 
       def self.projects(search_query)
-        projects = HTTParty.get(api_host, { headers: api_headers, query: { search: search_query } })
-        results = JSON.parse(projects)
-        results["projects"].map { |project| self.new(project) }.compact
+        # projects = HTTParty.get(api_host, { headers: api_headers, query: { search: search_query } })
+        results = client.projects(search: search_query)
+        results.map { |project| self.new(project) }.compact
       end
 
       def to_s
