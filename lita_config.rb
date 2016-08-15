@@ -1,8 +1,14 @@
 require 'bundler'
 require_relative './lita_env'
 
+require_relative 'lib/board'
+require_relative 'handlers/board_handler'
+require_relative 'handlers/party_handler'
+require_relative 'handlers/stream_events_handler'
+
 Bundler.require(:default, Lita::env)
 Dotenv.load
+Thread.abort_on_exception = true
 
 Lita.configure do |config|
   # The name your robot will use.
@@ -33,9 +39,9 @@ Lita.configure do |config|
   # config.redis.host = "127.0.0.1"
   # config.redis.port = 1234
 
-  config.handlers.factoid_handler.chance = 0.2
-  config.handlers.deployment.jenkins_username = ENV["JENKINS_USERNAME"]
-  config.handlers.deployment.jenkins_password = ENV["JENKINS_PASSWORD"]
-  config.handlers.lintott.api_key = ENV["FOURSQUARE_TOKEN"]
-  config.handlers.karma.link_karma_threshold = nil
+  # config.handlers.factoid_handler.chance = 0.2
+  # config.handlers.deployment.jenkins_username = ENV["JENKINS_USERNAME"]
+  # config.handlers.deployment.jenkins_password = ENV["JENKINS_PASSWORD"]
+  # config.handlers.lintott.api_key = ENV["FOURSQUARE_TOKEN"]
+  # config.handlers.karma.link_karma_threshold = nil
 end
