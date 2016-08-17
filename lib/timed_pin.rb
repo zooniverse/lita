@@ -1,12 +1,13 @@
 module Lita
   class TimedPin
-    attr_reader :board, :pin, :state, :on_until
+    attr_reader :board, :pin, :state, :default, :on_until
 
-    def initialize(board, pin)
+    def initialize(board, pin, default = false)
       @board = board
       @pin = pin
       @on_until = nil
-      @state = false
+      @default = default
+      @state = default
 
       @thread = Thread.new do
         loop do
@@ -37,11 +38,11 @@ module Lita
     end
 
     def on!
-      set! true
+      set!(!default)
     end
 
     def off!
-      set! false
+      set!(default)
     end
 
     def set!(value)

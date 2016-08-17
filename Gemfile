@@ -6,24 +6,18 @@ group :production do
   gem "lita-slack"
 end
 
-# Uncomment to use the IRC adapter
-# gem "lita-irc"
-
-# Add handlers to give Lita new functionality.
-# For example:
-# gem "lita-google-images"
-# gem "lita-karma"
-# gem "lita-lunch"
-# gem "lita-excuses"
-# gem "lita-catfacts"
-# gem "lita-catgif"
-# gem "lita-baby_elephant"
-# gem "lita-applause"
-# gem "lita-pugbomb"
-# gem "lita-flip"
-# gem "lita-cron"
-# gem 'lita-zooniverse', git: 'https://github.com/zooniverse/lita-zooniverse.git'
-# gem 'lita-bucket', git: 'https://github.com/marten/lita-bucket.git'
+gem "lita-karma"
+gem "lita-lunch"
+gem "lita-excuses"
+gem "lita-catfacts"
+gem "lita-catgif"
+gem "lita-baby_elephant"
+gem "lita-applause"
+gem "lita-pugbomb"
+gem "lita-flip"
+gem "lita-cron"
+gem 'lita-zooniverse', git: 'https://github.com/zooniverse/lita-zooniverse.git'
+gem 'lita-bucket', git: 'https://github.com/marten/lita-bucket.git'
 
 gem 'arduino_firmata', git: 'https://github.com/shokai/arduino_firmata'
 gem 'pusher-client'

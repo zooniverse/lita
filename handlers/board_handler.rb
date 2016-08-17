@@ -10,7 +10,7 @@ module Lita
       Board.instance.pins[:big_red_button].listen do |status|
         if status == true && @initial_event_ignored
           source = Source.new(user: nil, room: 'C06D83QTD')
-          robot.send_messages source, pick_message
+          # robot.send_messages source, pick_message
         end
 
         @initial_event_ignored = true

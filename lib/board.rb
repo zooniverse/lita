@@ -14,7 +14,11 @@ module Lita
         talk_comment: TimedPin.new(self, 13),
         ouroboros_classification: TimedPin.new(self, 10),
         ouroboros_comment: TimedPin.new(self, 11),
-        big_red_button: ReadPin.new(self, 9)
+        big_red_button: ReadPin.new(self, 9),
+	party1: TimedPin.new(self, 7, true),
+	party2: TimedPin.new(self, 6, true),
+	party3: TimedPin.new(self, 5, true),
+	party4: TimedPin.new(self, 4, true)
       }
 
       connect
@@ -37,6 +41,9 @@ module Lita
           puts ex.backtrace
         end
       end
+  
+      digital_write([7,6,5,4], true)
+
       puts "Connected to Arduino"
     end
 

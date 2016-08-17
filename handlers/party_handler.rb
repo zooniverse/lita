@@ -1,28 +1,14 @@
 module Lita
-  module Handlers
-    # class Party
-    #   attr_reader :board
+	class PartyHandler < Handler
+		route /^party/, :party, command: true
 
-    #   def initialize
-    #     @board = Lita::Board.instance
-    #     stop
-    #   end
+    def party(response)
+			Board.instance.pins[:party1].trigger(120)
+      Board.instance.pins[:party2].trigger(120)
 
-    #   def start
-    #     board.digital_write([2, 3, 4], false)
-    #   end
-
-    #   def stop
-    #     board.digital_write([2, 3, 4], true)
-    #   end
-    # end
-
-    class PartyHandler < Handler
-      # Board.instance.pins[:big_red_button].listen do |status|
-      #   puts "BUTTON: #{status}"
-      # end
+			response.reply("A PARTY HAS BEGUN!")
     end
+	end
 
-    Lita.register_handler(PartyHandler)
-  end
+	Lita.register_handler(PartyHandler)
 end
