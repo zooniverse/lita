@@ -31,6 +31,10 @@ module Lita
       @on_until = Time.now + duration
     end
 
+    def cancel
+      off!
+    end
+
     private
 
     def should_be_on?
