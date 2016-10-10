@@ -32,7 +32,7 @@ module Lita
     end
 
     def cancel
-      off!
+      @on_until = Time.now
     end
 
     private

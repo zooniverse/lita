@@ -16,7 +16,6 @@ module Lita
 
       response.reply(":sadpanda:")
     end
-
 	end
 
 	Lita.register_handler(PartyHandler)
