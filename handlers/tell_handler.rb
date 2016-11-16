@@ -4,8 +4,8 @@ module Lita
 		route /^tell (.*) (.*)$/, :tell, command: true
 
     def tell(response)
-      user = response.matches[0]
-      what = response.matches[1]
+      user = response.matches[0][0]
+      what = response.matches[0][1]
       response.reply("#{user}: #{what}")
     end
 	end
