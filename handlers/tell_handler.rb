@@ -1,6 +1,7 @@
 module Lita
-	class PartyHandler < Handler
+	class TellHandler < Handler
 		route /^tell (.*) to (.*)$/, :tell, command: true
+		route /^tell (.*) (.*)$/, :tell, command: true
 
     def tell(response)
       user = response.matches[0]
