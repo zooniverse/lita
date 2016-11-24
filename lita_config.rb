@@ -6,6 +6,7 @@ require_relative 'handlers/board_handler'
 require_relative 'handlers/party_handler'
 require_relative 'handlers/stream_events_handler'
 require_relative 'handlers/tell_handler'
+require_relative 'handlers/beverage_handler'
 
 Bundler.require(:default, Lita::env)
 Dotenv.load

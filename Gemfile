@@ -23,7 +23,10 @@ gem 'arduino_firmata', git: 'https://github.com/shokai/arduino_firmata'
 gem 'pusher-client'
 gem 'dotenv'
 
+gem 'activesupport'
+
 gem 'pry'
 
-group :development do
+group :development, :test do
+  gem 'rspec'
 end
