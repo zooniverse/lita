@@ -3,30 +3,30 @@ require 'beverage_handler'
 
 describe Lita::BeverageHandler, lita_handler: true do
   it 'records a coffee' do
-    send_command 'coffee'
+    send_command 'i drank a coffee'
     expect(replies.last).to eq("That's your 1st coffee today.")
 
-    send_command 'coffee'
+    send_command 'i drank a coffee'
     expect(replies.last).to eq("That's your 2nd coffee today.")
 
-    send_command 'coffee'
+    send_command 'i drank a coffee'
     expect(replies.last).to eq("That's your 3rd coffee today.")
 
-    send_command 'coffee'
+    send_command 'i drank a coffee'
     expect(replies.last).to eq("That's your 4th coffee today.")
   end
 
   it 'records a tea' do
-    send_command 'tea'
+    send_command 'i drank a tea'
     expect(replies.last).to eq("That's your 1st tea today.")
 
-    send_command 'tea'
+    send_command 'i drank tea'
     expect(replies.last).to eq("That's your 2nd tea today.")
 
-    send_command 'tea'
+    send_command 'i drank a tea'
     expect(replies.last).to eq("That's your 3rd tea today.")
 
-    send_command 'tea'
+    send_command 'i drank some tea'
     expect(replies.last).to eq("That's your 4th tea today.")
   end
 end

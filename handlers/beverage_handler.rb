@@ -2,11 +2,11 @@ require 'active_support/core_ext/integer/inflections'
 
 module Lita
   class BeverageHandler < Handler
-    route /^(coffee|tea|milk|hot chocolate|beer)$/, :drink, command: true
-    route /^(coffee|tea|milk|hot chocolate|beer) stats$/, :stats, command: true
+    route /^i drank (an?|some)?\s*([\w\s]+)$/, :drink, command: true
+    route /^drink stats$/, :stats, command: true
 
     def drink(response)
-      type = response.matches[0][0]
+      type = response.matches[0][1].strip
       alltime_key = "#{response.user.id}.#{type}.history"
       today_key = "#{response.user.id}.#{type}.history_#{Date.today.to_s}"
 
