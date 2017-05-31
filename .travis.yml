@@ -2,6 +2,6 @@ services:
   - redis-server
 language: ruby
 rvm:
-  - 2.2
+  - 2.4
 script:
   - bundle exec rspec
