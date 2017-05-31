@@ -3,12 +3,5 @@ services:
 language: ruby
 rvm:
   - 2.2
-gemfile:
-  - lita-zooniverse/Gemfile
-before_install:
-  - cd lita-zooniverse
-install:
-  - pwd
-  - bundle install
 script:
   - bundle exec rspec
