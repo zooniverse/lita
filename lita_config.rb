@@ -3,6 +3,7 @@ require_relative './lita_env'
 
 require_relative 'handlers/aws_handler'
 require_relative 'handlers/beverage_handler'
+require_relative 'handlers/dad_handler'
 require_relative 'handlers/deployment'
 require_relative 'handlers/lintott'
 require_relative 'handlers/projects'
