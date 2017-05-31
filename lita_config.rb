@@ -1,12 +1,13 @@
 require 'bundler'
 require_relative './lita_env'
 
-require_relative 'lib/board'
-require_relative 'handlers/board_handler'
-require_relative 'handlers/party_handler'
-require_relative 'handlers/stream_events_handler'
-require_relative 'handlers/tell_handler'
+require_relative 'handlers/aws_handler'
 require_relative 'handlers/beverage_handler'
+require_relative 'handlers/deployment'
+require_relative 'handlers/lintott'
+require_relative 'handlers/projects'
+require_relative 'handlers/reload'
+require_relative 'handlers/tell_handler'
 
 Bundler.require(:default, Lita::env)
 Dotenv.load
