@@ -4,7 +4,12 @@ module Lita
 
     def tell_joke(response)
       joke = HTTParty.get("https://icanhazdadjoke.com", headers: {"Accept" => "text/plain"}).strip
-      response.reply(joke)
+
+      if joke && joke != ""
+        response.reply(joke)
+      else
+        response.reply("Hmm, let me think. Ask me again later.")
+      end
     end
 	end
 
