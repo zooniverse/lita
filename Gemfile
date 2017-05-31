@@ -16,11 +16,15 @@ gem "lita-applause"
 gem "lita-pugbomb"
 gem "lita-flip"
 gem "lita-cron"
-gem 'lita-zooniverse', git: 'https://github.com/zooniverse/lita-zooniverse.git'
 gem 'lita-bucket', git: 'https://github.com/marten/lita-bucket.git'
 
-gem 'arduino_firmata', git: 'https://github.com/shokai/arduino_firmata'
-gem 'pusher-client'
+gem "httparty"
+gem "octokit"
+gem "jenkins_api_client"
+gem "aws-sdk", ">= 2"
+gem "a_vs_an"
+gem "panoptes-client"
+
 gem 'dotenv'
 
 gem 'activesupport'
