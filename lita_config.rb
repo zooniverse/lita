@@ -12,7 +12,7 @@ require_relative 'handlers/reload'
 require_relative 'handlers/tell_handler'
 
 Bundler.require(:default, Lita::env)
-Dotenv.load
+Dotenv.load(ENV["DOTENV_FILE"] || '.env')
 Thread.abort_on_exception = true
 
 Lita.configure do |config|
@@ -41,8 +41,10 @@ Lita.configure do |config|
     config.adapters.slack.token = ENV["SLACK_TOKEN"]
   end
 
-  # config.redis.host = "127.0.0.1"
-  # config.redis.port = 1234
+  config.http.port = 80
+
+  config.redis.host = ENV["REDIS_HOST"] || "127.0.0.1"
+  config.redis.port = (ENV["REDIS_PORT"] || 6379).to_i
 
   config.handlers.factoid_handler.chance = 0.2
   config.handlers.deployment.jenkins_username = ENV["JENKINS_USERNAME"]
