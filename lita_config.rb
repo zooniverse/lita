@@ -41,6 +41,8 @@ Lita.configure do |config|
     config.adapters.slack.token = ENV["SLACK_TOKEN"]
   end
 
+  config.http.port = ENV["PORT"] || 80
+  config.redis[:host] = ENV["REDIS_HOST"] || "localhost"
   # config.redis.host = "127.0.0.1"
   # config.redis.port = 1234
 

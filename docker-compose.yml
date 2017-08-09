@@ -1,0 +1,23 @@
+version: '2'
+services:
+  redis:
+    image: redis
+    command: redis-server --appendonly yes
+    volumes:
+      - ./data/redis:/data
+  app:
+    build:
+      context: .
+      args:
+        LITA_ENV: production
+    volumes:
+      - ./:/app
+    ports:
+      - "3000:80"
+    environment:
+      - "LITA_ENV=production"
+      - "REDIS_HOST=redis"
+    env_file:
+      - "environment_production"
+    links:
+      - redis:redis

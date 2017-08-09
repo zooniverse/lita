@@ -39,7 +39,7 @@ module Lita
       route(/^(panoptes) deploy api only$/, :deploy_api_only, command: true, help: {"panoptes deploy api only" => "Triggers a deployment of *PRODUCTION* api nodes only (no backgroud dump workers) in Jenkins."})
       route(/^(panoptes) lock\s*(.*)/, :lock, command: true, help: {"panoptes lock REASON" => "Stops builds and deployments"})
       route(/^(panoptes) unlock/, :unlock, command: true, help: {"panoptes unlock" => "Lifts deployment restrictions"})
-      route(/^(nero) deploy/, :deploy, command: true, help: {"nero deploy" => "Deploys https://github.com/zooniverse/nero"})
+      route(/^(caesar) deploy/, :deploy, command: true, help: {"caesar deploy" => "Deploys https://github.com/zooniverse/caesar"})
       route(/^(stats) deploy/, :deploy, command: true, help: {"stats deploy" => "Deploys https://github.com/zooniverse/zoo-event-stats"})
       route(/^(aggregation) deploy/, :deploy, command: true, help: {"aggregation deploy" => "Deploys https://github.com/zooniverse/aggregation"})
       route(/^clear static cache/, :clear_static_cache, command: true, help: {"clear static cache" => "Clears the static cache (duh)"})
