@@ -5,6 +5,7 @@ services:
     command: redis-server --appendonly yes
     volumes:
       - ./data/redis:/data
+
   app:
     build:
       context: .

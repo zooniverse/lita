@@ -12,7 +12,7 @@ require_relative 'handlers/reload'
 require_relative 'handlers/tell_handler'
 
 Bundler.require(:default, Lita::env)
-Dotenv.load
+Dotenv.load(ENV["DOTENV_FILE"] || '.env')
 Thread.abort_on_exception = true
 
 Lita.configure do |config|
