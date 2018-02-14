@@ -4,7 +4,7 @@ ARG LITA_ENV
 ENV PORT=80
 
 RUN apt-get update && \
-    apt-get install --no-install-recommends -y git curl supervisor && \
+    apt-get install --no-install-recommends -y git supervisor && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
 
 ADD ./Gemfile /app/
