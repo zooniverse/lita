@@ -15,8 +15,6 @@ RUN if [ "$LITA_ENV" = "development" ]; then bundle install; else bundle install
 ADD ./docker/supervisord.conf /etc/supervisor/conf.d/app.conf
 ADD ./ /app
 
-RUN (cd /app && git log --format="%H" -n 1 > commit_id.txt)
-
 EXPOSE 80
 
 CMD ["bash", "/app/docker/start.sh"]
