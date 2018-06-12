@@ -14,8 +14,8 @@ module Lita
           deploy_api_only: "Deploy latest Panoptes Production API only build",
           update_tag: "Update panoptes production tag"
         },
-        "nero" => {
-          deploy: "Update Nero production"
+        "caesar" => {
+          deploy: "Update Caesar Production"
         },
         "stats" => {
           deploy: "Update Zoo Event Stats production"
