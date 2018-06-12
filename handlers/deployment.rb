@@ -7,6 +7,9 @@ module Lita
   module Handlers
     class Deployment < Handler
       JOBS = {
+        "lita" => {
+          deploy: "Deploy lita"
+        },
         "panoptes" => {
           build: "Build Panoptes Production AMI",
           migrate: "Migrate Production Panoptes Database",
@@ -41,6 +44,7 @@ module Lita
       route(/^(panoptes) unlock/, :unlock, command: true, help: {"panoptes unlock" => "Lifts deployment restrictions"})
       route(/^(caesar) deploy/, :deploy, command: true, help: {"caesar deploy" => "Deploys https://github.com/zooniverse/caesar"})
       route(/^(stats) deploy/, :deploy, command: true, help: {"stats deploy" => "Deploys https://github.com/zooniverse/zoo-event-stats"})
+      route(/^(lita) deploy/, :deploy, command: true, help: {"lita deploy" => "Deploys myself, aka https://github.com/zooniverse/lita"})
       route(/^(aggregation) deploy/, :deploy, command: true, help: {"aggregation deploy" => "Deploys https://github.com/zooniverse/aggregation"})
       route(/^clear static cache/, :clear_static_cache, command: true, help: {"clear static cache" => "Clears the static cache (duh)"})
 
