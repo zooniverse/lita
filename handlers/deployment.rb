@@ -25,6 +25,12 @@ module Lita
         },
         "aggregation" => {
           deploy: "Update Panoptes production aggregation"
+        },
+        "talk" => {
+          build: "Build Talk Production",
+          migrate: "Migrate Production Talk-Api Database",
+          deploy: "	Deploy Talk Production",
+          update_tag: "Update talk production tag"
         }
       }
 
@@ -42,10 +48,20 @@ module Lita
       route(/^(panoptes) deploy api only$/, :deploy_api_only, command: true, help: {"panoptes deploy api only" => "Triggers a deployment of *PRODUCTION* api nodes only (no backgroud dump workers) in Jenkins."})
       route(/^(panoptes) lock\s*(.*)/, :lock, command: true, help: {"panoptes lock REASON" => "Stops builds and deployments"})
       route(/^(panoptes) unlock/, :unlock, command: true, help: {"panoptes unlock" => "Lifts deployment restrictions"})
+
+      route(/^(talk) update tag(\sand build)?$/, :update_tag, command: true, help: {"talk update tag" => "Triggers a GitHub production tag update via Jenkins and in turn dockerhub."})
+      route(/^(talk) build/, :build, command: true, help: {"talk build" => "Triggers a build of a new AMI of *PRODUCTION* in Jenkins."})
+      route(/^(talk) migrate/, :migrate, command: true, help: {"talk migrate" => "Runs database migrations for Talk *PRODUCTION* in Jenkins."})
+      route(/^(talk) deploy$/, :deploy, command: true, help: {"talk deploy" => "Triggers a deployment of *PRODUCTION* in Jenkins."})
+
       route(/^(caesar) deploy/, :deploy, command: true, help: {"caesar deploy" => "Deploys https://github.com/zooniverse/caesar"})
+
       route(/^(stats) deploy/, :deploy, command: true, help: {"stats deploy" => "Deploys https://github.com/zooniverse/zoo-event-stats"})
+
       route(/^(lita) deploy/, :deploy, command: true, help: {"lita deploy" => "Deploys myself, aka https://github.com/zooniverse/lita"})
+
       route(/^(aggregation) deploy/, :deploy, command: true, help: {"aggregation deploy" => "Deploys https://github.com/zooniverse/aggregation"})
+
       route(/^clear static cache/, :clear_static_cache, command: true, help: {"clear static cache" => "Clears the static cache (duh)"})
 
       def status(response)
