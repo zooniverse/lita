@@ -29,7 +29,7 @@ module Lita
         "talk" => {
           build: "Build Talk Production",
           migrate: "Migrate Production Talk-Api Database",
-          deploy: "	Deploy Talk Production",
+          deploy: "Deploy Talk Production",
           update_tag: "Update talk production tag"
         }
       }
