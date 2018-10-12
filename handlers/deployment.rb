@@ -68,14 +68,14 @@ module Lita
         deployed_version = HTTParty.get("https://panoptes.zooniverse.org/commit_id.txt").strip
 
         git_responses = {}
-        %w(HEAD production).each do |tag|
+        %w(HEAD production-release).each do |tag|
           comparison = Octokit.compare("zooniverse/panoptes", deployed_version, tag)
           if comparison.commits.empty?
             git_responses[tag] = "is the currently deployed version."
           else
             word = comparison.commits.size > 1 ? "commits" : "commit"
             git_responses[tag] = "#{comparison.commits.size} undeployed #{word}. #{comparison.permalink_url}"
-            git_responses[tag] << " :shipit:" if tag == "production"
+            git_responses[tag] << " :shipit:" if tag == "production-release"
           end
         end
 
