@@ -118,7 +118,7 @@ GEM
       slop (~> 3.4)
     public_suffix (3.0.3)
     puma (3.11.4)
-    rack (1.6.10)
+    rack (1.6.11)
     rb-readline (0.5.5)
     read_it (0.0.2)
       faraday (>= 0.8.7)
