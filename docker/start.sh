@@ -1,4 +1,4 @@
-#!/bin/bash -ex
+#!/bin/bash -e
 mkdir -p tmp/pids/
 rm -f tmp/pids/*.pid
 
