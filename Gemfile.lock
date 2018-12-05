@@ -10,7 +10,7 @@ GEM
   remote: https://rubygems.org/
   specs:
     a_vs_an (0.1.0)
-    activesupport (5.2.1.1)
+    activesupport (5.2.2)
       concurrent-ruby (~> 1.0, >= 1.0.2)
       i18n (>= 0.7, < 2)
       minitest (~> 5.1)
