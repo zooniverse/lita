@@ -12,7 +12,7 @@ module Lita
       route(/^generate project name/, :generate, command: true)
 
       def generate(response)
-          response.reply(GENERATOR.generate_word(5, 40))
+          response.reply(GENERATOR.generate_word(10, 100))
       end
 
       Lita.register_handler(self)
