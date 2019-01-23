@@ -733,7 +733,7 @@ PROJECT_NAMES = [
   "Demo",
   "CSH word images",
   "AMT_proj_01",
-  "InkSpotter (Ben) benwbrum@gmail.com",
+  "InkSpotter (Ben)",
   "AMT_proj_02",
   "save the chickens",
   "LetsLyrics",
