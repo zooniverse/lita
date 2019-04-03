@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: lita
+  labels:
+    app: lita
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: lita
+  template:
+    metadata:
+      labels:
+        app: lita
+    spec:
+      containers:
+        - name: lita-app
+          image: zooniverse/lita:__IMAGE_TAG__
+          env:
+          - name: REDIS_HOST
+            value: "lita-redis"
+          volumeMounts:
+          - name: lita-environment
+            mountPath: "/run/secrets/environment"
+            subPath: "environment"
+            readOnly: true
+      volumes:
+      - name: lita-environment
+        secret:
+          secretName: lita-environment

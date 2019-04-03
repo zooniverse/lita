@@ -1,0 +1,55 @@
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: lita-redis
+  annotations:
+    volume.beta.kubernetes.io/storage-class: "aws-efs"
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 1Mi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: lita-redis
+  labels:
+    app: lita-redis
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: lita-redis
+  template:
+    metadata:
+      labels:
+        app: lita-redis
+    spec:
+      containers:
+        - name: lita-redis
+          image: redis
+          volumeMounts:
+          - name: lita-redis-data
+            mountPath: "/data"
+      volumes:
+      - name: lita-redis-data
+        persistentVolumeClaim:
+          claimName: lita-redis
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: lita-redis
+spec:
+  selector:
+    app: lita-redis
+  ports:
+    - protocol: TCP
+      port: 6379
+      targetPort: 6379
+  type: NodePort
