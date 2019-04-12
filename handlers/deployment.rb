@@ -39,7 +39,7 @@ module Lita
       config :jenkins_username, required: true
       config :jenkins_password, required: true
 
-      route(/^(status|build|migrate|deploy|lock|unlock)/, :reversed, command: true)
+      route(/^(status|build|migrate|lock|unlock)/, :reversed, command: true)
 
       route(/^panoptes (status|version)/, :status, command: true, help: {"panoptes status" => "Returns the number of commits not deployed to production."})
       route(/^(panoptes) update tag(\sand build)?$/, :update_tag, command: true, help: {"panoptes update tag" => "Triggers a GitHub production tag update via Jenkins, in turn dockerhub & Jenkins will build a new production AMI."})
