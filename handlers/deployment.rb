@@ -31,7 +31,8 @@ module Lita
           migrate: "Migrate Production Talk-Api Database",
           deploy: "Deploy Talk Production",
           update_tag: "Update talk production tag"
-        }
+        },
+        "deploy" => "Update production-release tag"
       }
 
       config :jenkins_url, default: 'https://jenkins.zooniverse.org'
@@ -63,6 +64,8 @@ module Lita
       route(/^(aggregation) deploy/, :deploy, command: true, help: {"aggregation deploy" => "Deploys https://github.com/zooniverse/aggregation"})
 
       route(/^clear static cache/, :clear_static_cache, command: true, help: {"clear static cache" => "Clears the static cache (duh)"})
+
+      route(/^(deploy)\s*(.*)/, :tag_deploy, command: true, help: {"deploy REPO" => "Updates the production-release tag on zooniverse/REPO"})
 
       def status(response)
         deployed_version = HTTParty.get("https://panoptes.zooniverse.org/commit_id.txt").strip
@@ -141,6 +144,11 @@ module Lita
         response.reply("Reverse those please.")
       end
 
+      def tag_deploy(response)
+        jenkins_job_name = JOBS.fetch('deploy')
+        build_jenkins_job(response, jenkins_job_name, params={"REPO" => response.matches[0][1]})
+      end
+
       private
 
       def get_jobs(response)
@@ -158,10 +166,10 @@ module Lita
         end
       end
 
-      def build_jenkins_job(response, job_name)
+      def build_jenkins_job(response, job_name, params={})
         response.reply("#{job_name} starting... hang on while I get you a build number (might take up to 60 seconds).")
 
-        build_number = jenkins.job.build(job_name, {}, {'build_start_timeout' => 60, 'cancel_on_build_start_timeout' => true})
+        build_number = jenkins.job.build(job_name, params, {'build_start_timeout' => 60, 'cancel_on_build_start_timeout' => true})
         response.reply("#{job_name} #{build_number} started. Console output: #{config.jenkins_url}/job/#{URI.escape(job_name)}/#{build_number}/console")
 
         every(10) do |timer|
