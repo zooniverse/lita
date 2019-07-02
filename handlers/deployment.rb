@@ -52,8 +52,6 @@ module Lita
       route(/^(talk) migrate/, :migrate, command: true, help: {"talk migrate" => "Runs database migrations for Talk *PRODUCTION* in Jenkins."})
       route(/^(talk) deploy$/, :deploy, command: true, help: {"talk deploy" => "Triggers a deployment of *PRODUCTION* in Jenkins."})
 
-      route(/^(caesar) deploy/, :deploy, command: true, help: {"caesar deploy" => "Deploys https://github.com/zooniverse/caesar"})
-
       route(/^(stats) deploy/, :deploy, command: true, help: {"stats deploy" => "Deploys https://github.com/zooniverse/zoo-event-stats"})
 
       route(/^(lita) deploy/, :deploy, command: true, help: {"lita deploy" => "Deploys myself, aka https://github.com/zooniverse/lita"})
