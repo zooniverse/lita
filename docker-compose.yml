@@ -6,19 +6,17 @@ services:
     volumes:
       - ./data/redis:/data
 
-  app:
+  lita:
     build:
       context: .
       args:
-        LITA_ENV: production
+        LITA_ENV: development
     volumes:
       - ./:/app
     ports:
       - "3000:80"
     environment:
-      - "LITA_ENV=production"
+      - "LITA_ENV=development"
       - "REDIS_HOST=redis"
-    env_file:
-      - "environment_production"
     links:
       - redis:redis

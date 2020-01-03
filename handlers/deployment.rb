@@ -24,8 +24,8 @@ module Lita
       }
 
       config :jenkins_url, default: 'https://jenkins.zooniverse.org'
-      config :jenkins_username, required: true
-      config :jenkins_password, required: true
+      config :jenkins_username, required: Lita.required_config?
+      config :jenkins_password, required: Lita.required_config?
 
       route(/^(status|build|migrate|lock|unlock)/, :reversed, command: true)
 

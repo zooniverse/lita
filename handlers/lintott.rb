@@ -3,7 +3,7 @@ require 'a_vs_an'
 module Lita
   module Handlers
     class Lintott < Handler
-      config :api_key, required: true
+      config :api_key, required: Lita.required_config?
 
       route(/^locate lintott/, :lintott, command: true, help: {"locate lintott" => "Finds lintott"})
 
