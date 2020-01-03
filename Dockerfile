@@ -1,4 +1,4 @@
-FROM ruby:2.3
+FROM ruby:2.6
 WORKDIR /app
 ARG LITA_ENV
 ENV PORT=80
