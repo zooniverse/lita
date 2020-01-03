@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'httparty'
 require 'octokit'
 require 'jenkins_api_client'
@@ -23,11 +25,16 @@ module Lita
         "deploy" => "Update production-release tag"
       }
 
+      COMMIT_ID_TXT_URL = {
+        'zooniverse/panoptes' => 'https://panoptes.zooniverse.org/commit_id.txt',
+        'zooniverse/talk-api' => 'https://talk.zooniverse.org/commit_id.txt'
+      }
+
       config :jenkins_url, default: 'https://jenkins.zooniverse.org'
       config :jenkins_username, required: Lita.required_config?
       config :jenkins_password, required: Lita.required_config?
 
-      route(/^(status|build|migrate|lock|unlock)/, :reversed, command: true)
+      route(/^(build|migrate|lock|unlock)/, :reversed, command: true)
 
       route(/^clear static cache/, :clear_static_cache, command: true, help: {"clear static cache" => "Clears the static cache (duh)"})
 
@@ -35,7 +42,7 @@ module Lita
       # relies heavily on the old operations repo deployment scripts
       #
       # state: still in use for Panoptes and Talk but will change once they are migrated to K8s
-      route(/^panoptes (status|version)/, :status, command: true, help: {"panoptes status" => "Returns the number of commits not deployed to production."})
+      route(/^panoptes (status|version)/, :panoptes_status, command: true, help: {'panoptes status' => 'Returns the number of commits not deployed to production.'})
       route(/^(panoptes) update tag(\sand build)?$/, :update_tag, command: true, help: {"panoptes update tag" => "Triggers a GitHub production tag update via Jenkins, in turn dockerhub & Jenkins will build a new production AMI."})
       route(/^(panoptes) build/, :build, command: true, help: {"panoptes build" => "Triggers a build of a new AMI of *PRODUCTION* in Jenkins."})
       route(/^(panoptes) migrate/, :migrate, command: true, help: {"panoptes migrate" => "Runs database migrations for Panoptes *PRODUCTION* in Jenkins."})
@@ -55,28 +62,7 @@ module Lita
       # state: the default deploy "chat ops" deploy system
       #        and in use for all K8s deployed services
       route(/^(deploy)\s*(.*)/, :tag_deploy, command: true, help: {"deploy REPO" => "Updates the production-release tag on zooniverse/REPO"})
-
-      def status(response)
-        deployed_version = HTTParty.get("https://panoptes.zooniverse.org/commit_id.txt").strip
-
-        git_responses = {}
-        %w(HEAD production-release).each do |tag|
-          comparison = Octokit.compare("zooniverse/panoptes", deployed_version, tag)
-          if comparison.commits.empty?
-            git_responses[tag] = "is the currently deployed version."
-          else
-            word = comparison.commits.size > 1 ? "commits" : "commit"
-            git_responses[tag] = "#{comparison.commits.size} undeployed #{word}. #{comparison.permalink_url}"
-            git_responses[tag] << " :shipit:" if tag == "production-release"
-          end
-        end
-
-        formatted_response = git_responses.map do |tag, comment|
-          "#{tag.upcase} : #{comment}"
-        end.join("\n")
-
-        response.reply(formatted_response)
-      end
+      route(/^(status|version)\s*(.*)/, :status, command: true, help: {'status GITHUB_ORG/REPO_NAME' => 'Returns the number of commits not deployed to production-release for the org/repo_name.'})
 
       def run_deployment_task(response, job)
         app, jobs = get_jobs(response)
@@ -138,6 +124,21 @@ module Lita
         build_jenkins_job(response, jenkins_job_name, params={"REPO" => response.matches[0][1]})
       end
 
+      # backwards compat for existing chat ops cmd
+      def panoptes_status(response)
+        repo_name = 'zooniverse/panoptes'
+        response.reply(
+          get_repo_status(repo_name)
+        )
+      end
+
+      def status(response)
+        repo_name = response.matches[0][1]
+        response.reply(
+          get_repo_status(repo_name)
+        )
+      end
+
       private
 
       def get_jobs(response)
@@ -187,6 +188,60 @@ module Lita
                                             username: config.jenkins_username,
                                             password: config.jenkins_password,
                                             ssl: true)
+      end
+
+      def get_repo_status(repo_name)
+        deployed_version = HTTParty.get(
+          app_commit_url(repo_name)
+        )
+
+        production_tag = production_release_tag(repo_name)
+
+        get_app_status(repo_name, deployed_version, production_tag)
+      end
+
+      def get_app_status(repo_name, deployed_version, prod_tag)
+        git_responses = {}
+        ['HEAD', prod_tag].each do |tag|
+          comparison = Octokit.compare(repo_name, deployed_version.strip, tag)
+          if comparison.commits.empty?
+            git_responses[tag] = 'is the currently deployed version.'
+          else
+            word = comparison.commits.size > 1 ? 'commits' : 'commit'
+            git_responses[tag] = "#{comparison.commits.size} undeployed #{word}. #{comparison.permalink_url}"
+            git_responses[tag] << ' :shipit:' if tag == 'production-release'
+          end
+        end
+
+        formatted_response = git_responses.map do |tag, comment|
+          "#{tag.upcase} : #{comment}"
+        end
+
+        formatted_response.join("\n")
+      end
+
+      def app_commit_url(repo_name)
+        if (commit_id_url = COMMIT_ID_TXT_URL[repo_name])
+          commit_id_url
+        # TODO: handle the JSON style apps like
+        # https://education-api.zooniverse.org/
+        # https://seven-ten.zooniverse.org/
+        # https://stats.zooniverse.org/
+        # https://graphql-stats.zooniverse.org/
+        # etc
+      else
+          "https://#{app_name}.zooniverse.org/commit_id.txt"
+        end
+      end
+
+      def production_release_tag(repo_name)
+        # this only really applies to talk
+        # as all other repos use the 'production-release' tag
+        if repo_name == 'zooniverse/talk-api'
+          'production'
+        else
+          'production-release'
+        end
       end
 
       Lita.register_handler(self)
