@@ -1,7 +1,12 @@
 services:
-  - redis-server
-language: ruby
-rvm:
-  - 2.6
+  - docker
+
+branches:
+  only:
+  - master
+
+before_install:
+ - docker-compose build
+
 script:
-  - bundle exec rspec
+  - docker-compose run -T --rm --entrypoint="bundle exec rspec" lita
