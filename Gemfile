@@ -16,7 +16,6 @@ gem "lita-applause"
 gem "lita-pugbomb"
 gem "lita-flip"
 gem "lita-cron"
-gem 'lita-bucket', git: 'https://github.com/marten/lita-bucket.git'
 
 gem "httparty"
 gem "octokit"
