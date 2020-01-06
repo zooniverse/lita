@@ -8,7 +8,6 @@ require_relative 'handlers/deployment'
 require_relative 'handlers/insult_handler'
 require_relative 'handlers/lintott'
 require_relative 'handlers/projects'
-require_relative 'handlers/reload'
 require_relative 'handlers/tell_handler'
 require_relative 'handlers/project_name_handler'
 
