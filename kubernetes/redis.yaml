@@ -3,14 +3,13 @@ kind: PersistentVolumeClaim
 apiVersion: v1
 metadata:
   name: lita-redis
-  annotations:
-    volume.beta.kubernetes.io/storage-class: "aws-efs"
 spec:
   accessModes:
     - ReadWriteMany
+  storageClassName: azurefile
   resources:
     requests:
-      storage: 1Mi
+      storage: 1Gi
 ---
 apiVersion: apps/v1
 kind: Deployment
