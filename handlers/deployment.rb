@@ -25,10 +25,22 @@ module Lita
         "deploy" => "Update production-release tag"
       }
 
-      COMMIT_ID_TXT_URL = {
-        'zooniverse/panoptes' => 'https://panoptes.zooniverse.org/commit_id.txt',
-        'zooniverse/talk-api' => 'https://talk.zooniverse.org/commit_id.txt'
-      }
+      ORG_URL_AND_TYPES = {
+        'zooniverse/talk-api' => [ 'file', 'https://talk.zooniverse.org/commit_id.txt' ],
+        'zooniverse/zoo-stats-api-graphql' => [ 'json', 'https://graphql-stats.zooniverse.org' ]
+          # TODO: enumerate the JSON style apps like
+          # https://education-api.zooniverse.org/
+          # https://seven-ten.zooniverse.org/
+          # https://stats.zooniverse.org/
+          # https://graphql-stats.zooniverse.org/
+          # etc
+      }.freeze
+
+      JSON_COMMIT_ID_KEYS = %w[revision commit_id].freeze
+      DEPLOYED_BRANCH_REPOS = {
+        'zooniverse/talk-api' => 'production',
+        'zooniverse/zoo-stats-api-graphql' => 'master'
+      }.freeze
 
       config :jenkins_url, default: 'https://jenkins.zooniverse.org'
       config :jenkins_username, required: Lita.required_config?
@@ -191,12 +203,8 @@ module Lita
       end
 
       def get_repo_status(repo_name)
-        deployed_version = HTTParty.get(
-          app_commit_url(repo_name)
-        )
-
+        deployed_version = get_deployed_commit(repo_name)
         production_tag = production_release_tag(repo_name)
-
         get_app_status(repo_name, deployed_version, production_tag)
       end
 
@@ -220,25 +228,31 @@ module Lita
         formatted_response.join("\n")
       end
 
-      def app_commit_url(repo_name)
-        if (commit_id_url = COMMIT_ID_TXT_URL[repo_name])
-          commit_id_url
-        # TODO: handle the JSON style apps like
-        # https://education-api.zooniverse.org/
-        # https://seven-ten.zooniverse.org/
-        # https://stats.zooniverse.org/
-        # https://graphql-stats.zooniverse.org/
-        # etc
-      else
-          "https://#{app_name}.zooniverse.org/commit_id.txt"
+      def get_deployed_commit(repo_name)
+        type, repo_url = repo_type_and_url(repo_name)
+        repo_url_data = HTTParty.get(repo_url)
+        case type
+        when 'json'
+          commit_key = (JSON_COMMIT_ID_KEYS & repo_url_data.keys).first
+          repo_url_data.fetch(commit_key)
+        else
+          repo_url_data
+        end
+      end
+
+      def repo_type_and_url(repo_name)
+        type, url = ORG_URL_AND_TYPES[repo_name]
+        if type && url
+          [type, url]
+        else
+          app_name = repo_name.split('/')[1]
+          ['file', "https://#{app_name}.zooniverse.org/commit_id.txt"]
         end
       end
 
       def production_release_tag(repo_name)
-        # this only really applies to talk
-        # as all other repos use the 'production-release' tag
-        if repo_name == 'zooniverse/talk-api'
-          'production'
+        if branch_or_tag = DEPLOYED_BRANCH_REPOS[repo_name]
+          branch_or_tag
         else
           'production-release'
         end
