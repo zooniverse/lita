@@ -14,11 +14,11 @@ Requires Ruby & Redis, http://docs.lita.io/getting-started/installation/#manual-
 
 1. `docker-compose build` to build the local image for development
 
-2. `docker-compose run -T --rm --entrypoint="bundle exec rspec" lita`
+2. `docker-compose run -T --rm lita bundle exec rspec`
 
 Alternatively get a console to interactively run code / debug tests
 
-1. `docker-compose run --rm --entrypoint="/bin/bash" lita` to launch a bash shell in the container
+1. `docker-compose run --rm lita bash` to launch a bash shell in the container
 
 2. `bundle exec rspec` to run tests from the container
 

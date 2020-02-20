@@ -9,4 +9,4 @@ before_install:
  - docker-compose build
 
 script:
-  - docker-compose run -T --rm --entrypoint="bundle exec rspec" lita
+  - docker-compose run -T --rm lita bundle exec rspec
