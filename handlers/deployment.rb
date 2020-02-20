@@ -146,6 +146,9 @@ module Lita
 
       def status(response)
         repo_name = response.matches[0][1]
+        unless repo_name.match(/\Azooniverse\/.*/)
+          repo_name = "zooniverse/#{repo_name}"
+        end
         response.reply(
           get_repo_status(repo_name)
         )
