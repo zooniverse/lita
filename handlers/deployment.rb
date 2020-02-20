@@ -74,7 +74,7 @@ module Lita
       # state: the default deploy "chat ops" deploy system
       #        and in use for all K8s deployed services
       route(/^(deploy)\s*(.*)/, :tag_deploy, command: true, help: {"deploy REPO" => "Updates the production-release tag on zooniverse/REPO"})
-      route(/^(status|version)\s*(.*)/, :status, command: true, help: {'status GITHUB_ORG/REPO_NAME' => 'Returns the number of commits not deployed to production-release for the org/repo_name.'})
+      route(/^(status|version)\s*(.*)/, :status, command: true, help: {'status REPO_NAME' => 'Returns the number of state of commits not deployed for the $REPO_NAME.'})
 
       def run_deployment_task(response, job)
         app, jobs = get_jobs(response)
