@@ -1,6 +1,6 @@
 FROM ruby:2.6
 WORKDIR /app
-ARG LITA_ENV
+ARG LITA_ENV=production
 ENV PORT=80
 
 RUN apt-get update && \

@@ -1,4 +1,11 @@
 require "lita/rspec"
+require_relative '../lita_env'
+
+if ENV["REDIS_HOST"]
+  Lita.configure do |config|
+    config.redis[:host] = ENV["REDIS_HOST"]
+  end
+end
 
 $:.unshift(File.expand_path("../../handlers", __FILE__))
 
