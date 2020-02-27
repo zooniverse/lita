@@ -9,6 +9,10 @@ module Lita
   module Handlers
     class Deployment < Handler
       class UnknownStatusResponseKey < StandardError; end
+      class MissingStatusResponse < StandardError; end
+      class MissingStatusResponseData < StandardError; end
+      class UnknownServiceUrl < StandardError; end
+
       JOBS = {
         "panoptes" => {
           build: "Build Panoptes Production AMI",
@@ -201,16 +205,26 @@ module Lita
                                             ssl: true)
       end
 
-      def get_repo_status(repo_name, error_prefix='Failed to fetch the deployed commit for this repo.')
-        deployed_version = get_deployed_commit(repo_name)
+      def get_repo_status(repo_name)
+        repo_url = repo_type_and_url(repo_name)
+        deployed_version = get_deployed_commit(repo_url)
         production_tag = production_release_tag(repo_name)
         get_app_status(repo_name, deployed_version, production_tag)
+      rescue UnknownServiceUrl
+        error_response('No service is running on the url', repo_url)
+      rescue MissingStatusResponse
+        error_response('Missing deployed status data on the service url', repo_url)
+      rescue MissingStatusResponseData
+        error_response('Deployed status found on the service url but it has no data', repo_url)
       rescue UnknownStatusResponseKey
-        "#{error_prefix}\nUnknown commit identifier in the status response body"
+        error_response('Unknown commit identifier in the status response body', repo_url)
       rescue Octokit::NotFound
-        "#{error_prefix}\nUnknown deploy branch / tag target on the repo"
+        error_response('Unknown deploy branch / tag target on the repo', repo_url)
       end
 
+      def error_response(msg, repo_url, error_prefix='Failed to fetch the deployed commit for this repo.')
+        "#{error_prefix}\n#{msg} - #{repo_url}"
+      end
 
       def get_app_status(repo_name, deployed_version, prod_tag)
         git_responses = {}
@@ -232,15 +246,18 @@ module Lita
         formatted_response.join("\n")
       end
 
-      def get_deployed_commit(repo_name)
-        repo_url = repo_type_and_url(repo_name)
-        repo_url_data = HTTParty.get(repo_url)
+      def get_deployed_commit(repo_url)
+        deployed_status_data = fetch_deployed_status_data(repo_url)
+
         # if the response object looks like a json object
-        if repo_url_data.respond_to?(:keys)
-          commit_key = (JSON_COMMIT_ID_KEYS & repo_url_data.keys).first
-          repo_url_data.fetch(commit_key)
+        if deployed_status_data.respond_to?(:keys)
+          commit_key = (JSON_COMMIT_ID_KEYS & deployed_status_data.keys).first
+          status_data = deployed_status_data.fetch(commit_key)
+          raise MissingStatusResponseData unless status_data
+
+          status_data
         else
-          repo_url_data
+          deployed_status_data
         end
       rescue KeyError
         raise UnknownStatusResponseKey
@@ -252,7 +269,7 @@ module Lita
           url
         else
           app_name = repo_name.split('/')[1]
-          "https://#{app_name}.zooniverse.org/commit_id.txt"
+          "https://#{app_name}.zooniverse.org"
         end
       end
 
@@ -262,6 +279,21 @@ module Lita
         else
           'production-release'
         end
+      end
+
+      def fetch_deployed_status_data(repo_url)
+        # try the commit_id file first
+        repo_commit_id_url = "#{repo_url}/commit_id.txt"
+        repo_url_data = HTTParty.get(repo_commit_id_url)
+        if repo_url_data.code == 404
+          # let's try the root service url for some json data
+          repo_url_data = HTTParty.get(repo_url)
+        end
+        raise MissingStatusResponse if repo_url_data.code == 404
+
+        repo_url_data
+      rescue SocketError
+        raise UnknownServiceUrl
       end
 
       Lita.register_handler(self)
