@@ -8,6 +8,7 @@ require 'uri'
 module Lita
   module Handlers
     class Deployment < Handler
+      class UnknownStatusResponseKey < StandardError; end
       JOBS = {
         "panoptes" => {
           build: "Build Panoptes Production AMI",
@@ -25,15 +26,10 @@ module Lita
         "deploy" => "Update production-release tag"
       }
 
-      ORG_URL_AND_TYPES = {
-        'zooniverse/talk-api' => [ 'file', 'https://talk.zooniverse.org/commit_id.txt' ],
-        'zooniverse/zoo-stats-api-graphql' => [ 'json', 'https://graphql-stats.zooniverse.org' ]
-          # TODO: enumerate the JSON style apps like
-          # https://education-api.zooniverse.org/
-          # https://seven-ten.zooniverse.org/
-          # https://stats.zooniverse.org/
-          # https://graphql-stats.zooniverse.org/
-          # etc
+      IRREGULAR_ORG_URLS = {
+        'zooniverse/talk-api' => 'https://talk.zooniverse.org/commit_id.txt',
+        'zooniverse/zoo-stats-api-graphql' => 'https://graphql-stats.zooniverse.org',
+        'zooniverse/zoo-event-stats' => 'https://stats.zooniverse.org/'
       }.freeze
 
       JSON_COMMIT_ID_KEYS = %w[revision commit_id].freeze
@@ -205,11 +201,16 @@ module Lita
                                             ssl: true)
       end
 
-      def get_repo_status(repo_name)
+      def get_repo_status(repo_name, error_prefix='Failed to fetch the deployed commit for this repo.')
         deployed_version = get_deployed_commit(repo_name)
         production_tag = production_release_tag(repo_name)
         get_app_status(repo_name, deployed_version, production_tag)
+      rescue UnknownStatusResponseKey
+        "#{error_prefix}\nUnknown commit identifier in the status response body"
+      rescue Octokit::NotFound
+        "#{error_prefix}\nUnknown deploy branch / tag target on the repo"
       end
+
 
       def get_app_status(repo_name, deployed_version, prod_tag)
         git_responses = {}
@@ -232,24 +233,26 @@ module Lita
       end
 
       def get_deployed_commit(repo_name)
-        type, repo_url = repo_type_and_url(repo_name)
+        repo_url = repo_type_and_url(repo_name)
         repo_url_data = HTTParty.get(repo_url)
-        case type
-        when 'json'
+        # if the response object looks like a json object
+        if repo_url_data.respond_to?(:keys)
           commit_key = (JSON_COMMIT_ID_KEYS & repo_url_data.keys).first
           repo_url_data.fetch(commit_key)
         else
           repo_url_data
         end
+      rescue KeyError
+        raise UnknownStatusResponseKey
       end
 
       def repo_type_and_url(repo_name)
-        type, url = ORG_URL_AND_TYPES[repo_name]
-        if type && url
-          [type, url]
+        url = IRREGULAR_ORG_URLS[repo_name]
+        if url
+          url
         else
           app_name = repo_name.split('/')[1]
-          ['file', "https://#{app_name}.zooniverse.org/commit_id.txt"]
+          "https://#{app_name}.zooniverse.org/commit_id.txt"
         end
       end
 
