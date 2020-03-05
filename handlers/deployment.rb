@@ -235,7 +235,7 @@ module Lita
           else
             word = comparison.commits.size > 1 ? 'commits' : 'commit'
             git_responses[tag] = "#{comparison.commits.size} undeployed #{word}. #{comparison.permalink_url}"
-            git_responses[tag] << ' :shipit:' if tag == 'production-release'
+            git_responses[tag] + ' :shipit:' if tag == 'production-release'
           end
         end
 
