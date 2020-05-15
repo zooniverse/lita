@@ -19,6 +19,13 @@ spec:
       containers:
         - name: lita-app
           image: zooniverse/lita:__IMAGE_TAG__
+          resources:
+                 requests:
+                   memory: "200Mi"
+                   cpu: "10m"
+                 limits:
+                   memory: "200Mi"
+                   cpu: "500m"
           env:
           - name: REDIS_HOST
             value: "lita-redis"
