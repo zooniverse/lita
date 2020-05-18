@@ -32,6 +32,13 @@ spec:
       containers:
         - name: lita-redis
           image: redis
+          resources:
+                 requests:
+                   memory: "10Mi"
+                   cpu: "10m"
+                 limits:
+                   memory: "100Mi"
+                   cpu: "500m"
           volumeMounts:
           - name: lita-redis-data
             mountPath: "/data"
