@@ -1,5 +1,6 @@
 require "lita/rspec"
 require_relative '../lita_env'
+require 'pry'
 
 if ENV["REDIS_HOST"]
   Lita.configure do |config|

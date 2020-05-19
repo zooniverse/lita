@@ -1,4 +1,4 @@
-version: '2'
+version: '3'
 services:
   redis:
     image: redis
@@ -13,6 +13,7 @@ services:
         LITA_ENV: development
     volumes:
       - ./:/app
+      - gem_cache:/usr/local/bundle
     ports:
       - "3000:80"
     environment:
@@ -20,3 +21,6 @@ services:
       - "REDIS_HOST=redis"
     links:
       - redis:redis
+
+volumes:
+  gem_cache:

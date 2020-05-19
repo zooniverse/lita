@@ -26,10 +26,7 @@ gem "panoptes-client"
 
 gem 'dotenv'
 
-gem 'activesupport'
-
-gem 'pry'
-
 group :development, :test do
+  gem 'pry'
   gem 'rspec'
 end
