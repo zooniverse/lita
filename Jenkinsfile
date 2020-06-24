@@ -36,6 +36,14 @@ pipeline {
         }
       }
     }
+    stage('Dry run deployments') {
+      agent any
+      steps {
+        sh "kubectl --context azure apply --dry-run=client --record -f kubernetes/"
+        sh "sed 's/__IMAGE_TAG__/${GIT_COMMIT}/g' kubernetes/deployment.tmpl | kubectl --context azure apply --dry-run=client --record -f -"
+      }
+    }
+
     stage('Deploy to Kubernetes') {
       when { branch 'master' }
       agent any

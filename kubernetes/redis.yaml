@@ -34,15 +34,15 @@ spec:
           operator: "Equal"
           value: "longlife"
           effect: "NoSchedule"
-        affinity:
-          nodeAffinity:
-            requiredDuringSchedulingIgnoredDuringExecution:
-              nodeSelectorTerms:
-              - matchExpressions:
-                - key: servicelife
-                  operator: In
-                  values:
-                  - longlife
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: servicelife
+                operator: In
+                values:
+                - longlife
       containers:
         - name: lita-redis
           image: redis
