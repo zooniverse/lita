@@ -26,6 +26,14 @@ spec:
                  limits:
                    memory: "200Mi"
                    cpu: "500m"
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 80
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 80
           env:
           - name: REDIS_HOST
             value: "lita-redis"
