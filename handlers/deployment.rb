@@ -134,7 +134,7 @@ module Lita
       def build_jenkins_job(response, job_name, params={})
         response.reply("#{job_name} starting... hang on while I get you a build number (might take up to 60 seconds).")
 
-        build_number = jenkins.job.build(job_name, params, {'build_start_timeout' => 60, 'cancel_on_build_start_timeout' => true})
+        build_number = jenkins.job.build(job_name, params, {'build_start_timeout' => ENV.fetch('JENKINS_JOB_TIMEOUT', 90).to_i, 'cancel_on_build_start_timeout' => true})
         response.reply("#{job_name} #{build_number} started. Console output: #{config.jenkins_url}/job/#{URI.escape(job_name)}/#{build_number}/console")
 
         every(10) do |timer|
