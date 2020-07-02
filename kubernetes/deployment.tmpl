@@ -30,6 +30,10 @@ spec:
             httpGet:
               path: /
               port: 80
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 80
           env:
           - name: REDIS_HOST
             value: "lita-redis"
