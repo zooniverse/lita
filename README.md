@@ -18,7 +18,7 @@ Requires Ruby & Redis, http://docs.lita.io/getting-started/installation/#manual-
 
 Alternatively get a console to interactively run code / debug tests
 
-1. `docker-compose run --rm lita bash` to launch a bash shell in the container
+1. `docker-compose run --service-ports --rm lita bash` to launch a bash shell in the container
 
 2. `bundle exec rspec` to run tests from the container
 
