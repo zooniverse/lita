@@ -14,20 +14,14 @@ module Lita
       class UnknownServiceUrl < StandardError; end
 
       JOBS = {
-        "panoptes" => {
-          build: "Build Panoptes Production AMI",
-          migrate: "Migrate Production Panoptes Database",
-          deploy: "Deploy latest Panoptes Production build",
-          deploy_api_only: "Deploy latest Panoptes Production API only build",
-          update_tag: "Update panoptes production tag"
-        },
         "talk" => {
           build: "Build Talk Production",
           migrate: "Migrate Production Talk-Api Database",
           deploy: "Deploy Talk Production",
           update_tag: "Update talk production tag"
         },
-        "deploy" => "Update production-release tag"
+        "deploy" => "Update production-release tag",
+        "migrate" => "Update production-migrate tag"
       }
 
       IRREGULAR_ORG_URLS = {
@@ -46,7 +40,7 @@ module Lita
       config :jenkins_username, required: Lita.required_config?
       config :jenkins_password, required: Lita.required_config?
 
-      route(/^(build|migrate|lock|unlock)/, :reversed, command: true)
+      route(/^(build|lock|unlock)/, :reversed, command: true)
 
       route(/^clear static cache/, :clear_static_cache, command: true, help: {"clear static cache" => "Clears the static cache (duh)"})
 
@@ -54,14 +48,6 @@ module Lita
       # relies heavily on the old operations repo deployment scripts
       #
       # state: still in use for Panoptes and Talk but will change once they are migrated to K8s
-      route(/^panoptes (status|version)/, :panoptes_status, command: true, help: {'panoptes status' => 'Returns the number of commits not deployed to production.'})
-      route(/^(panoptes) update tag(\sand build)?$/, :update_tag, command: true, help: {"panoptes update tag" => "Triggers a GitHub production tag update via Jenkins, in turn dockerhub & Jenkins will build a new production AMI."})
-      route(/^(panoptes) build/, :build, command: true, help: {"panoptes build" => "Triggers a build of a new AMI of *PRODUCTION* in Jenkins."})
-      route(/^(panoptes) migrate/, :migrate, command: true, help: {"panoptes migrate" => "Runs database migrations for Panoptes *PRODUCTION* in Jenkins."})
-      route(/^(panoptes) deploy$/, :deploy, command: true, help: {"panoptes deploy" => "Triggers a deployment of *PRODUCTION* in Jenkins."})
-      route(/^(panoptes) deploy api only$/, :deploy_api_only, command: true, help: {"panoptes deploy api only" => "Triggers a deployment of *PRODUCTION* api nodes only (no backgroud dump workers) in Jenkins."})
-      route(/^(panoptes) lock\s*(.*)/, :lock, command: true, help: {"panoptes lock REASON" => "Stops builds and deployments"})
-      route(/^(panoptes) unlock/, :unlock, command: true, help: {"panoptes unlock" => "Lifts deployment restrictions"})
       route(/^(talk) update tag(\sand build)?$/, :update_tag, command: true, help: {"talk update tag" => "Triggers a GitHub production tag update via Jenkins and in turn dockerhub."})
       route(/^(talk) build/, :build, command: true, help: {"talk build" => "Triggers a build of a new AMI of *PRODUCTION* in Jenkins."})
       route(/^(talk) migrate/, :migrate, command: true, help: {"talk migrate" => "Runs database migrations for Talk *PRODUCTION* in Jenkins."})
@@ -74,6 +60,7 @@ module Lita
       # state: the default deploy "chat ops" deploy system
       #        and in use for all K8s deployed services
       route(/^(deploy)\s*(.*)/, :tag_deploy, command: true, help: {"deploy REPO" => "Updates the production-release tag on zooniverse/REPO"})
+      route(/^(migrate)\s*(.*)/, :tag_migrate, command: true, help: {"migrate REPO" => "Updates the production-migrate tag on zooniverse/REPO"})
       route(/^(status|version)\s*(.*)/, :status, command: true, help: {'status REPO_NAME' => 'Returns the state of commits not deployed for the $REPO_NAME.'})
 
       def run_deployment_task(response, job)
@@ -99,30 +86,6 @@ module Lita
         run_deployment_task(response, :deploy)
       end
 
-      def deploy_api_only(response)
-        run_deployment_task(response, :deploy_api_only)
-      end
-
-      def lock(response)
-        app, jobs = get_jobs(response)
-        reason = response.matches[0][1]
-        reason = reason.empty? ? "No reason given" : reason
-        redis.set("lock:#{app}:reason", reason)
-        redis.set("lock:#{app}:user", response.user.name)
-        response.reply("None shall pass.")
-      end
-
-      def unlock(response)
-        app, jobs = get_jobs(response)
-        if locked?(app)
-          redis.del("lock:#{app}:reason")
-          redis.del("lock:#{app}:user")
-          response.reply("Unlocked.")
-        else
-          response.reply("Wasn't locked to begin with.")
-        end
-      end
-
       def clear_static_cache(response)
         build_jenkins_job(response, "Clear static cache")
       end
@@ -136,12 +99,9 @@ module Lita
         build_jenkins_job(response, jenkins_job_name, params={"REPO" => response.matches[0][1]})
       end
 
-      # backwards compat for existing chat ops cmd
-      def panoptes_status(response)
-        repo_name = 'zooniverse/panoptes'
-        response.reply(
-          get_repo_status(repo_name)
-        )
+      def tag_migrate(response)
+        jenkins_job_name = JOBS.fetch('migrate')
+        build_jenkins_job(response, jenkins_job_name, params={"REPO" => response.matches[0][1]})
       end
 
       def status(response)
