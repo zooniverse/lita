@@ -22,7 +22,7 @@ GEM
       faraday_middleware (~> 0.10)
     faraday_middleware (0.12.2)
       faraday (>= 0.7.4, < 1.0)
-    faye-websocket (0.10.7)
+    faye-websocket (0.11.0)
       eventmachine (>= 0.12.0)
       websocket-driver (>= 0.5.1)
     http_router (0.11.2)
@@ -146,7 +146,7 @@ GEM
     unicode-display_width (1.4.0)
     url_mount (0.2.1)
       rack
-    websocket-driver (0.7.0)
+    websocket-driver (0.7.3)
       websocket-extensions (>= 0.1.0)
     websocket-extensions (0.1.5)
 
