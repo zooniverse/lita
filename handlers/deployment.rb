@@ -14,12 +14,6 @@ module Lita
       class UnknownServiceUrl < StandardError; end
 
       JOBS = {
-        "talk" => {
-          build: "Build Talk Production",
-          migrate: "Migrate Production Talk-Api Database",
-          deploy: "Deploy Talk Production",
-          update_tag: "Update talk production tag"
-        },
         "deploy" => "Update production-release tag",
         "migrate" => "Update production-migrate tag"
       }
@@ -43,15 +37,6 @@ module Lita
       route(/^(build|lock|unlock)/, :reversed, command: true)
 
       route(/^clear static cache/, :clear_static_cache, command: true, help: {"clear static cache" => "Clears the static cache (duh)"})
-
-      # specific repo deployment targets for building and deploying AMIs
-      # relies heavily on the old operations repo deployment scripts
-      #
-      # state: still in use for Panoptes and Talk but will change once they are migrated to K8s
-      route(/^(talk) update tag(\sand build)?$/, :update_tag, command: true, help: {"talk update tag" => "Triggers a GitHub production tag update via Jenkins and in turn dockerhub."})
-      route(/^(talk) build/, :build, command: true, help: {"talk build" => "Triggers a build of a new AMI of *PRODUCTION* in Jenkins."})
-      route(/^(talk) migrate/, :migrate, command: true, help: {"talk migrate" => "Runs database migrations for Talk *PRODUCTION* in Jenkins."})
-      route(/^(talk) deploy$/, :deploy, command: true, help: {"talk deploy" => "Triggers a deployment of *PRODUCTION* in Jenkins."})
 
       # New K8s deployment template
       # updates the production release tag on the supplied repo (\s*.(*))
