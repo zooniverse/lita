@@ -40,7 +40,7 @@ module Lita
       config :jenkins_username, required: Lita.required_config?
       config :jenkins_password, required: Lita.required_config?
 
-      route(/^(build|lock|unlock)/, :reversed, command: true)
+      route(/^(build)/, :reversed, command: true)
 
       route(/^clear static cache/, :clear_static_cache, command: true, help: {"clear static cache" => "Clears the static cache (duh)"})
 
@@ -65,7 +65,6 @@ module Lita
 
       def run_deployment_task(response, job)
         app, jobs = get_jobs(response)
-        ensure_no_lock(app, response) or return
         jenkins_job_name = jobs[job]
         build_jenkins_job(response, jenkins_job_name)
       end
@@ -122,15 +121,6 @@ module Lita
         [app, jobs]
       end
 
-      def ensure_no_lock(app, response)
-        if lock = locked?(app)
-          response.reply("#{app} is version-locked by #{lock.user}: #{lock.reason}")
-          false
-        else
-          true
-        end
-      end
-
       def build_jenkins_job(response, job_name, params={})
         response.reply("#{job_name} starting... hang on while I get you a build number (might take up to 60 seconds).")
 
@@ -146,15 +136,6 @@ module Lita
         end
       rescue Timeout::Error
         response.reply("#{job_name} couldn't be started.")
-      end
-
-      def locked?(app)
-        reason = redis.get("lock:#{app}:reason")
-        user = redis.get("lock:#{app}:user")
-
-        if reason || user
-          OpenStruct.new(reason: reason, user: redis.get("lock:#{app}:user"))
-        end
       end
 
       def jenkins
