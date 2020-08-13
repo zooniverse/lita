@@ -34,8 +34,6 @@ module Lita
       config :jenkins_username, required: Lita.required_config?
       config :jenkins_password, required: Lita.required_config?
 
-      route(/^(build)/, :reversed, command: true)
-
       route(/^clear static cache/, :clear_static_cache, command: true, help: {"clear static cache" => "Clears the static cache (duh)"})
 
       # New K8s deployment template
@@ -47,28 +45,6 @@ module Lita
       route(/^(deploy)\s*(.*)/, :tag_deploy, command: true, help: {"deploy REPO" => "Updates the production-release tag on zooniverse/REPO"})
       route(/^(migrate)\s*(.*)/, :tag_migrate, command: true, help: {"migrate REPO" => "Updates the production-migrate tag on zooniverse/REPO"})
       route(/^(status|version)\s*(.*)/, :status, command: true, help: {'status REPO_NAME' => 'Returns the state of commits not deployed for the $REPO_NAME.'})
-
-      def run_deployment_task(response, job)
-        app, jobs = get_jobs(response)
-        jenkins_job_name = jobs[job]
-        build_jenkins_job(response, jenkins_job_name)
-      end
-
-      def update_tag(response)
-        run_deployment_task(response, :update_tag)
-      end
-
-      def build(response)
-        run_deployment_task(response, :build)
-      end
-
-      def migrate(response)
-        run_deployment_task(response, :migrate)
-      end
-
-      def deploy(response)
-        run_deployment_task(response, :deploy)
-      end
 
       def clear_static_cache(response)
         build_jenkins_job(response, "Clear static cache")
@@ -99,12 +75,6 @@ module Lita
       end
 
       private
-
-      def get_jobs(response)
-        app = response.matches[0][0]
-        jobs = JOBS.fetch(app)
-        [app, jobs]
-      end
 
       def build_jenkins_job(response, job_name, params={})
         response.reply("#{job_name} starting... hang on while I get you a build number (might take up to 60 seconds).")
