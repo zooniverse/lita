@@ -30,10 +30,13 @@ module Lita
         'zooniverse/zoo-stats-api-graphql' => 'master'
       }.freeze
 
+      DEPLOY_REPOS_SET_NAME = 'deploy-repos'
+
       config :jenkins_url, default: 'https://jenkins.zooniverse.org'
       config :jenkins_username, required: Lita.required_config?
       config :jenkins_password, required: Lita.required_config?
 
+      # THIS CAN GO
       route(/^(build)/, :reversed, command: true)
 
       route(/^clear static cache/, :clear_static_cache, command: true, help: {"clear static cache" => "Clears the static cache (duh)"})
@@ -46,26 +49,32 @@ module Lita
       #        and in use for all K8s deployed services
       route(/^(deploy)\s*(.*)/, :tag_deploy, command: true, help: {"deploy REPO" => "Updates the production-release tag on zooniverse/REPO"})
       route(/^(migrate)\s*(.*)/, :tag_migrate, command: true, help: {"migrate REPO" => "Updates the production-migrate tag on zooniverse/REPO"})
-      route(/^(status|version)\s*(.*)/, :status, command: true, help: {'status REPO_NAME' => 'Returns the state of commits not deployed for the $REPO_NAME.'})
+      route(/^(status\s*all)/, :status_all, command: true, help: {'deployment status' => 'Returns the state deployments for all known $REPO_NAMES.'})
+      route(/^(status|version)\s+(?!all)(.+)/, :status, command: true, help: {'status REPO_NAME' => 'Returns the state of commits not deployed for the $REPO_NAME.'})
 
+      # THIS CAN GO
       def run_deployment_task(response, job)
         app, jobs = get_jobs(response)
         jenkins_job_name = jobs[job]
         build_jenkins_job(response, jenkins_job_name)
       end
 
+      # THIS CAN GO
       def update_tag(response)
         run_deployment_task(response, :update_tag)
       end
 
+      # THIS CAN GO
       def build(response)
         run_deployment_task(response, :build)
       end
 
+      # THIS CAN GO
       def migrate(response)
         run_deployment_task(response, :migrate)
       end
 
+      # THIS CAN GO
       def deploy(response)
         run_deployment_task(response, :deploy)
       end
@@ -80,26 +89,38 @@ module Lita
 
       def tag_deploy(response)
         jenkins_job_name = JOBS.fetch('deploy')
-        build_jenkins_job(response, jenkins_job_name, params={"REPO" => response.matches[0][1]})
+        repo_name = response.matches[0][1]
+
+        # Track in redis sorted set which systems we are deploying
+        # note: this might track some false positives
+        #       these will be removed in the `get_repo_status` method on lookup failure
+        redis.zadd(DEPLOY_REPOS_SET_NAME, 1, repo_name, incr: true)
+
+        build_jenkins_job(response, jenkins_job_name, { 'REPO' => repo_name })
       end
 
       def tag_migrate(response)
         jenkins_job_name = JOBS.fetch('migrate')
-        build_jenkins_job(response, jenkins_job_name, params={"REPO" => response.matches[0][1]})
+        build_jenkins_job(response, jenkins_job_name, { 'REPO' => response.matches[0][1] })
       end
 
       def status(response)
         repo_name = response.matches[0][1]
-        unless repo_name.match(/\Azooniverse\/.*/)
-          repo_name = "zooniverse/#{repo_name}"
+        response.reply(get_repo_status(repo_name))
+      end
+
+      def status_all(response)
+        output = []
+        repos_sorted_to_deploy_frequency = redis.zrevrange(DEPLOY_REPOS_SET_NAME, 0, -1)
+        repos_sorted_to_deploy_frequency.each do |repo_name|
+          output << "#{repo_name}\n#{get_repo_status(repo_name)}\n"
         end
-        response.reply(
-          get_repo_status(repo_name)
-        )
+        response.reply(output.join("\n"))
       end
 
       private
 
+      # THIS CAN GO
       def get_jobs(response)
         app = response.matches[0][0]
         jobs = JOBS.fetch(app)
@@ -132,23 +153,35 @@ module Lita
       end
 
       def get_repo_status(repo_name)
+        unless repo_name.match(/\Azooniverse\/.*/)
+          repo_name = "zooniverse/#{repo_name}"
+        end
         repo_url = repo_type_and_url(repo_name)
         deployed_version = get_deployed_commit(repo_url)
         production_tag = production_release_tag(repo_name)
-        get_app_status(repo_name, deployed_version, production_tag)
+        good_response = get_app_status(repo_name, deployed_version, production_tag)
       rescue UnknownServiceUrl
-        error_response('No service is running on the url', repo_url)
+        error_response = status_error_response('No service is running on the url', repo_url)
       rescue MissingStatusResponse
-        error_response('Missing deployed status data on the service url', repo_url)
+        error_response = status_error_response('Missing deployed status data on the service url', repo_url)
       rescue MissingStatusResponseData
-        error_response('Deployed status found on the service url but it has no data', repo_url)
+        error_response = status_error_response('Deployed status found on the service url but it has no data', repo_url)
       rescue UnknownStatusResponseKey
-        error_response('Unknown commit identifier in the status response body', repo_url)
+        error_response = status_error_response('Unknown commit identifier in the status response body', repo_url)
       rescue Octokit::NotFound
-        error_response('Unknown deploy branch / tag target on the repo', repo_url)
+        error_response = status_error_response('Unknown deploy branch / tag target on the repo', repo_url)
+      ensure
+        if error_response
+          # remove the repo from our tracking set for status all reports
+          binding.pry
+          redis.zrem(DEPLOY_REPOS_SET_NAME, repo_name)
+          error_response
+        else
+          good_response
+        end
       end
 
-      def error_response(msg, repo_url, error_prefix='Failed to fetch the deployed commit for this repo.')
+      def status_error_response(msg, repo_url, error_prefix='Failed to fetch the deployed commit for this repo.')
         "#{error_prefix}\n#{msg} - #{repo_url}"
       end
 
