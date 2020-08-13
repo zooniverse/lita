@@ -22,9 +22,6 @@ module Lita
       config :jenkins_password, required: Lita.required_config?
       config :github_status_reporter, default: Github::StatusReporter.new
 
-      # THIS CAN GO
-      route(/^(build)/, :reversed, command: true)
-
       route(/^clear static cache/, :clear_static_cache, command: true, help: {"clear static cache" => "Clears the static cache (duh)"})
 
       # New K8s deployment template
@@ -37,33 +34,6 @@ module Lita
       route(/^(migrate)\s*(.*)/, :tag_migrate, command: true, help: {"migrate REPO" => "Updates the production-migrate tag on zooniverse/REPO"})
       route(/^(status\s*all)/, :status_all, command: true, help: {'deployment status' => 'Returns the state deployments for all known $REPO_NAMES.'})
       route(/^(status|version)\s+(?!all)(.+)/, :status, command: true, help: {'status REPO_NAME' => 'Returns the state of commits not deployed for the $REPO_NAME.'})
-
-      # THIS CAN GO
-      def run_deployment_task(response, job)
-        app, jobs = get_jobs(response)
-        jenkins_job_name = jobs[job]
-        build_jenkins_job(response, jenkins_job_name)
-      end
-
-      # THIS CAN GO
-      def update_tag(response)
-        run_deployment_task(response, :update_tag)
-      end
-
-      # THIS CAN GO
-      def build(response)
-        run_deployment_task(response, :build)
-      end
-
-      # THIS CAN GO
-      def migrate(response)
-        run_deployment_task(response, :migrate)
-      end
-
-      # THIS CAN GO
-      def deploy(response)
-        run_deployment_task(response, :deploy)
-      end
 
       def clear_static_cache(response)
         build_jenkins_job(response, "Clear static cache")
@@ -105,13 +75,6 @@ module Lita
       end
 
       private
-
-      # THIS CAN GO
-      def get_jobs(response)
-        app = response.matches[0][0]
-        jobs = JOBS.fetch(app)
-        [app, jobs]
-      end
 
       def build_jenkins_job(response, job_name, params={})
         response.reply("#{job_name} starting... hang on while I get you a build number (might take up to 60 seconds).")
