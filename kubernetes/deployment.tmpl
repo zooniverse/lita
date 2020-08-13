@@ -37,6 +37,8 @@ spec:
           env:
           - name: REDIS_HOST
             value: "lita-redis"
+          - name: LANG
+            value: "en"
           volumeMounts:
           - name: lita-environment
             mountPath: "/run/secrets/environment"

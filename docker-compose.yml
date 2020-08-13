@@ -19,6 +19,7 @@ services:
     environment:
       - "LITA_ENV=development"
       - "REDIS_HOST=redis"
+      - "LANG=en"
     links:
       - redis:redis
 
