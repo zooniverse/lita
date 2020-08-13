@@ -173,7 +173,6 @@ module Lita
       ensure
         if error_response
           # remove the repo from our tracking set for status all reports
-          binding.pry
           redis.zrem(DEPLOY_REPOS_SET_NAME, repo_name)
           error_response
         else
