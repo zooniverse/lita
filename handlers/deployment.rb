@@ -32,7 +32,7 @@ module Lita
       #        and in use for all K8s deployed services
       route(/^(deploy)\s*(.*)/, :tag_deploy, command: true, help: {"deploy REPO" => "Updates the production-release tag on zooniverse/REPO"})
       route(/^(migrate)\s*(.*)/, :tag_migrate, command: true, help: {"migrate REPO" => "Updates the production-migrate tag on zooniverse/REPO"})
-      route(/^(status\s*all)/, :status_all, command: true, help: {'deployment status' => 'Returns the state deployments for all known $REPO_NAMES.'})
+      route(/^(status\s*all)/, :status_all, command: true, help: {'staus all' => 'Returns the deployment status for all previously deployed $REPO_NAMES.'})
       route(/^(status|version)\s+(?!all)(.+)/, :status, command: true, help: {'status REPO_NAME' => 'Returns the state of commits not deployed for the $REPO_NAME.'})
 
       def clear_static_cache(response)
