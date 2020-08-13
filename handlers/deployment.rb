@@ -52,7 +52,7 @@ module Lita
         #       these will be removed in error handling via status_response
         redis.zadd(DEPLOY_REPOS_SET_NAME, 1, repo_name, incr: true)
 
-        # build_jenkins_job(response, jenkins_job_name, { 'REPO' => repo_name })
+        build_jenkins_job(response, jenkins_job_name, { 'REPO' => repo_name })
       end
 
       def tag_migrate(response)
