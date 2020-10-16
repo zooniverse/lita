@@ -45,7 +45,9 @@ module Lita
 
       def tag_deploy(response)
         jenkins_job_name = JOBS.fetch('deploy')
-        repo_name = response.matches[0][1]
+        # ensure no leading/trailing whitespaces etc in the name
+        raw_repo_name = response.matches[0][1]
+        repo_name = raw_repo_name.strip
 
         # Track in redis sorted set which systems we are deploying
         # note: this might track some false positives
