@@ -34,13 +34,10 @@ module Lita
       route(/^(migrate)\s*(.*)/, :tag_migrate, command: true, help: {"migrate REPO" => "Updates the production-migrate tag on zooniverse/REPO"})
       route(/^(status\s*all)/, :status_all, command: true, help: {'staus all' => 'Returns the deployment status for all previously deployed $REPO_NAMES.'})
       route(/^(status|version)\s+(?!all)(.+)/, :status, command: true, help: {'status REPO_NAME' => 'Returns the state of commits not deployed for the $REPO_NAME.'})
+      route(/^(history)\s(.+)/, :commit_history, command: true, help: {'history REPO_NAME' => 'Returns the last deployed commit history (max 10) .'})
 
       def clear_static_cache(response)
         build_jenkins_job(response, "Clear static cache")
-      end
-
-      def reversed(response)
-        response.reply("Reverse those please.")
       end
 
       def tag_deploy(response)
@@ -48,13 +45,10 @@ module Lita
         # ensure no leading/trailing whitespaces etc in the name
         raw_repo_name = response.matches[0][1]
         repo_name = raw_repo_name.strip
-
-        # Track in redis sorted set which systems we are deploying
-        # note: this might track some false positives
-        #       these will be removed in error handling via status_response
-        redis.zadd(DEPLOY_REPOS_SET_NAME, 1, repo_name, incr: true)
-
+        track_deploy_data_in_redis(repo_name)
         build_jenkins_job(response, jenkins_job_name, { 'REPO' => repo_name })
+      rescue Lita::Github::StatusReporter::UnknonwnRepoCommit => e
+        response.reply("Failed to deploy: #{e.message}")
       end
 
       def tag_migrate(response)
@@ -74,6 +68,15 @@ module Lita
           output << "#{repo_name}\n#{status_response(repo_name)}\n"
         end
         response.reply(output.join("\n"))
+      end
+
+      def commit_history(response)
+        repo_name = response.matches[0][1]
+        last_deployed_commits = redis.lrange(repo_name_commit_history_list(repo_name), 0, -1)
+        repo_name = config.github_status_reporter.orgify_repo_name(repo_name)
+        last_deployed_commits.map { |commit_id| commit_url_format(repo_name, commit_id) }
+        output = "Last Deployed Commits (most recent is higher):\n#{last_deployed_commits.join("\n")}"
+        response.reply(output)
       end
 
       private
@@ -110,6 +113,31 @@ module Lita
           redis.zrem(DEPLOY_REPOS_SET_NAME, repo_name)
         end
         gh_status_response.body
+      end
+
+      def track_deploy_data_in_redis(repo_name)
+        # Track in redis sorted set which systems we are deploying
+        # and track their last 10 commit histories using a capped list
+        commit_id = config.github_status_reporter.get_latest_commit(repo_name)
+        commit_history_list = repo_name_commit_history_list(repo_name)
+
+        redis.multi do
+          # note: this might track some false positives
+          #       these will be removed in error handling via status_response
+          redis.zadd(DEPLOY_REPOS_SET_NAME, 1, repo_name, incr: true)
+          # left push the commit_id to the list
+          redis.lpush(commit_history_list, commit_id)
+          # keep the most recent 10 list items, i.e. cap the list size
+          redis.ltrim(commit_history_list, 0, 9)
+        end
+      end
+
+      def repo_name_commit_history_list(repo_name)
+        "#{repo_name}_commit_history"
+      end
+
+      def commit_url_format(repo_name, commit_id)
+        "https://github.com/#{repo_name}/commit/#{commit_id}"
       end
 
       Lita.register_handler(self)
