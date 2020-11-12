@@ -10,6 +10,7 @@ module Lita
       class MissingStatusResponse < StandardError; end
       class MissingStatusResponseData < StandardError; end
       class UnknownServiceUrl < StandardError; end
+      class UnknonwnRepoCommit < StandardError; end
 
       IRREGULAR_ORG_URLS = {
         'zooniverse/talk-api' => 'https://talk.zooniverse.org/commit_id.txt',
@@ -22,11 +23,36 @@ module Lita
         'zooniverse/talk-api' => 'production',
         'zooniverse/zoo-stats-api-graphql' => 'master'
       }.freeze
+      GH_PREVIEW_API_HEADERS = {
+        'Accept': 'application/vnd.github.groot-preview+json',
+        'User-Agent' => 'Httparty'
+      }.freeze
+      ORGIFY_REGEX = /\Azooniverse\/.*/.freeze
+
+      def orgify_repo_name(repo_name)
+        if repo_name.match(ORGIFY_REGEX)
+          repo_name
+        else
+          "zooniverse/#{repo_name}"
+        end
+      end
+
+      def get_latest_commit(repo_name)
+        repo_name = orgify_repo_name(repo_name)
+        # https://docs.github.com/en/free-pro-team@latest/rest/reference/repos#list-branches-for-head-commit
+        # use the HEAD as that should be our default remote branch
+        repo_url = "https://api.github.com/repos/#{repo_name}/commits/HEAD/branches-where-head"
+        head_commit_response = HTTParty.get(repo_url, headers: GH_PREVIEW_API_HEADERS)
+        if [404, 422].include?(head_commit_response.code)
+          raise UnknonwnRepoCommit, "Can not get the currently deployed commit id of #{repo_name}"
+        end
+
+        # assumption - there should only be 1 default remote branch on GH
+        head_commit_response[0].dig('commit', 'sha')
+      end
 
       def get_repo_status(repo_name)
-        unless repo_name.match(/\Azooniverse\/.*/)
-          repo_name = "zooniverse/#{repo_name}"
-        end
+        repo_name = orgify_repo_name(repo_name)
         repo_url = repo_type_and_url(repo_name)
         deployed_version = get_deployed_commit(repo_url)
         production_tag = production_release_tag(repo_name)
