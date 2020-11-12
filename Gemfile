@@ -20,9 +20,7 @@ gem "lita-cron"
 gem "httparty"
 gem "octokit"
 gem "jenkins_api_client"
-gem "aws-sdk", ">= 2"
 gem "a_vs_an"
-gem "panoptes-client"
 
 gem 'dotenv'
 
