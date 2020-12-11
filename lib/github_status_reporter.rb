@@ -21,7 +21,8 @@ module Lita
       JSON_COMMIT_ID_KEYS = %w[revision commit_id].freeze
       DEPLOYED_BRANCH_REPOS = {
         'zooniverse/talk-api' => 'production',
-        'zooniverse/zoo-stats-api-graphql' => 'master'
+        'zooniverse/zoo-stats-api-graphql' => 'master',
+        'zooniverse/redsea' => 'main'
       }.freeze
       GH_PREVIEW_API_HEADERS = {
         'Accept': 'application/vnd.github.groot-preview+json',
