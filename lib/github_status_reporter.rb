@@ -159,7 +159,9 @@ module Lita
           # let's try the root service url for some json data
           repo_url_data = HTTParty.get(repo_url)
         end
-        raise MissingStatusResponse if repo_url_data.code == 404
+        # 404's are obs bad and we can't really use html page responses, rather we prefer text / json
+        missing_status_response = repo_url_data.code == 404 || repo_url_data.content_type == 'text/html'
+        raise MissingStatusResponse if missing_status_response
 
         repo_url_data
       rescue SocketError
