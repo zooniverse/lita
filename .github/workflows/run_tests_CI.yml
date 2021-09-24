@@ -1,0 +1,21 @@
+name: Zooni CI
+on:
+  pull_request:
+  push: { branches: master }
+env:
+  LITA_ENV: development
+  REDIS_HOST: redis
+  LANG: en
+jobs:
+  test:
+    name: Run Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Setup Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: 2.7
+          bundler-cache: true
+      - name: Run tests
+        run: bundle exec rspec
