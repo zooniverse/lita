@@ -22,7 +22,14 @@ module Lita
       config :jenkins_password, required: Lita.required_config?
       config :github_status_reporter, default: Github::StatusReporter.new
 
+      # Jenkins jobs to help with OPS work
       route(/^clear static cache/, :clear_static_cache, command: true, help: {"clear static cache" => "Clears the static cache (duh)"})
+      route(
+        /^rebuild subject[\s-]set[\s-]search API/i,
+        :rebuild_subject_set_search_api,
+        command: true,
+        help: { 'rebuild subject-set-search API' => 'Rebuild subject-set-search API with new data' }
+      )
 
       # New K8s deployment template
       # updates the production release tag on the supplied repo (\s*.(*))
@@ -38,6 +45,10 @@ module Lita
 
       def clear_static_cache(response)
         build_jenkins_job(response, "Clear static cache")
+      end
+
+      def rebuild_subject_set_search_api(response)
+        build_jenkins_job(response, 'Rebuild subject set search API')
       end
 
       def tag_deploy(response)
