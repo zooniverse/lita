@@ -13,7 +13,7 @@ module Lita
       class UnknonwnRepoCommit < StandardError; end
 
       IRREGULAR_ORG_URLS = {
-        'zooniverse/front-end-monorepo' => 'https://fe-project.zooniverse.org/commit_id.txt',
+        'zooniverse/front-end-monorepo' => 'https://fe-project.zooniverse.org/projects/commit_id.txt',
         'zooniverse/pfe-lab' => 'https://lab.zooniverse.org/commit_id.txt',
         'zooniverse/Panoptes-Front-End' => 'https://www.zooniverse.org/commit_id.txt',
         'zooniverse/pandora' => 'https://translations.zooniverse.org/commit_id.txt',
