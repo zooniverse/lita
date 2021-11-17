@@ -53,9 +53,7 @@ module Lita
 
       def tag_deploy(response)
         jenkins_job_name = JOBS.fetch('deploy')
-        # ensure no leading/trailing whitespaces etc in the name
-        raw_repo_name = response.matches[0][1]
-        repo_name = raw_repo_name.strip
+        repo_name = repo_name_without_whitespace(response.matches[0][1])
         track_deploy_data_in_redis(repo_name)
         build_jenkins_job(response, jenkins_job_name, { 'REPO' => repo_name })
       rescue Lita::Github::StatusReporter::UnknonwnRepoCommit => e
@@ -64,11 +62,11 @@ module Lita
 
       def tag_migrate(response)
         jenkins_job_name = JOBS.fetch('migrate')
-        build_jenkins_job(response, jenkins_job_name, { 'REPO' => response.matches[0][1] })
+        build_jenkins_job(response, jenkins_job_name, { 'REPO' => repo_name_without_whitespace(response.matches[0][1]) })
       end
 
       def status(response)
-        repo_name = response.matches[0][1]
+        repo_name = repo_name_without_whitespace(response.matches[0][1])
         response.reply(status_response(repo_name))
       end
 
@@ -82,7 +80,7 @@ module Lita
       end
 
       def commit_history(response)
-        repo_name = response.matches[0][1]
+        repo_name = repo_name_without_whitespace(response.matches[0][1])
         last_deployed_commits = redis.lrange(repo_name_commit_history_list(repo_name), 0, -1)
         repo_name = config.github_status_reporter.orgify_repo_name(repo_name)
         last_deployed_commits.map { |commit_id| commit_url_format(repo_name, commit_id) }
@@ -91,6 +89,11 @@ module Lita
       end
 
       private
+      
+      # ensure no leading/trailing whitespaces etc in the name
+      def repo_name_without_whitespace(repo_name)
+        repo_name.strip
+      end
 
       def build_jenkins_job(response, job_name, params={})
         response.reply("#{job_name} starting... hang on while I get you a build number (might take up to 60 seconds).")
