@@ -52,12 +52,21 @@ module Lita
       end
 
       def tag_deploy(response)
-        jenkins_job_name = JOBS.fetch('deploy')
         repo_name = repo_name_without_whitespace(response.matches[0][1])
-        track_deploy_data_in_redis(repo_name)
-        build_jenkins_job(response, jenkins_job_name, { 'REPO' => repo_name })
-      rescue Lita::Github::StatusReporter::UnknonwnRepoCommit => e
-        response.reply("Failed to deploy: #{e.message}")
+        begin
+          output = config.github_status_reporter.update_production_tag(repo_name)
+          tag = output[:ref].split('/')[2]
+          response.reply("Deployment tag '#{tag}' was successfully updated for #{repo_name}.")
+        rescue Lita::Github::StatusReporter::RefAlreadyDeployed => e
+          response.reply("Deploy cancelled: #{e.message}")
+        rescue Lita::Github::StatusReporter::UnknownRepoCommit => e
+          response.reply("Failed to deploy: #{e.message}")
+        rescue Octokit::Error => e
+          response.reply("Failed to update tag: #{e.message}")
+        else
+          # Track the deploy if no exception is thrown
+          track_deploy_data_in_redis(repo_name)
+        end
       end
 
       def tag_migrate(response)
@@ -89,7 +98,7 @@ module Lita
       end
 
       private
-      
+
       # ensure no leading/trailing whitespaces etc in the name
       def repo_name_without_whitespace(repo_name)
         repo_name.strip
