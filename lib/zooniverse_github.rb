@@ -3,14 +3,15 @@
 require 'ostruct'
 
 module Lita
-  module Github
-    class StatusReporter
+  module Zooniverse
+    class Github
 
       class UnknownStatusResponseKey < StandardError; end
       class MissingStatusResponse < StandardError; end
       class MissingStatusResponseData < StandardError; end
       class UnknownServiceUrl < StandardError; end
-      class UnknonwnRepoCommit < StandardError; end
+      class UnknownRepoCommit < StandardError; end
+      class RefAlreadyDeployed < StandardError; end
 
       IRREGULAR_ORG_URLS = {
         'zooniverse/front-end-monorepo' => 'https://fe-project.zooniverse.org/projects/commit_id.txt',
@@ -22,11 +23,14 @@ module Lita
         'zooniverse/zoo-event-stats' => 'https://stats.zooniverse.org/'
       }.freeze
 
+      # Repos that do not use heads/master as their primary ref
+      PRIMARY_REF_BY_REPO = {
+      }.freeze
+
       JSON_COMMIT_ID_KEYS = %w[revision commit_id].freeze
       DEPLOYED_BRANCH_REPOS = {
         'zooniverse/talk-api' => 'production',
-        'zooniverse/zoo-stats-api-graphql' => 'master',
-        'zooniverse/redsea' => 'main'
+        'zooniverse/zoo-stats-api-graphql' => 'master'
       }.freeze
       GH_PREVIEW_API_HEADERS = {
         'Accept': 'application/vnd.github.groot-preview+json',
@@ -49,7 +53,7 @@ module Lita
         repo_url = "https://api.github.com/repos/#{repo_name}/commits/HEAD/branches-where-head"
         head_commit_response = HTTParty.get(repo_url, headers: GH_PREVIEW_API_HEADERS)
         if [404, 422].include?(head_commit_response.code)
-          raise UnknonwnRepoCommit, "Can not get the currently deployed commit id of #{repo_name}"
+          raise UnknownRepoCommit, "Can not get the currently deployed commit id of #{repo_name}"
         end
 
         # assumption - there should only be 1 default remote branch on GH
@@ -90,6 +94,19 @@ module Lita
           status: :error,
           body: status_error_response('Unknown deploy branch / tag target on the repo', repo_url)
         )
+      end
+
+      def update_production_tag(repo_name)
+        full_repo_name = orgify_repo_name(repo_name)
+        deploy_ref = 'tags/' + production_release_tag(full_repo_name)
+
+        head_commit_id = octokit_client.refs(full_repo_name, primary_ref(full_repo_name)).object.sha
+        commit_at_tag = octokit_client.refs(full_repo_name, deploy_ref).object.sha
+
+        raise RefAlreadyDeployed, 'HEAD and tag commit SHAs match, ref already deployed' if head_commit_id == commit_at_tag
+        update_ref_response = octokit_client.update_ref(full_repo_name, deploy_ref, head_commit_id)
+        # Return name of updated tag
+        update_ref_response[:ref].split('/')[2]
       end
 
       private
@@ -146,11 +163,11 @@ module Lita
       end
 
       def production_release_tag(repo_name)
-        if branch_or_tag = DEPLOYED_BRANCH_REPOS[repo_name]
-          branch_or_tag
-        else
-          'production-release'
-        end
+        DEPLOYED_BRANCH_REPOS[repo_name] || 'production-release'
+      end
+
+      def primary_ref(repo_name)
+        PRIMARY_REF_BY_REPO[repo_name] || 'heads/master'
       end
 
       def fetch_deployed_status_data(repo_url)
@@ -168,6 +185,10 @@ module Lita
         repo_url_data
       rescue SocketError
         raise UnknownServiceUrl
+      end
+
+      def octokit_client
+        @octokit_client ||= Octokit::Client.new(access_token: ENV['GITHUB_TOKEN'])
       end
     end
   end

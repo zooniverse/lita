@@ -4,7 +4,7 @@ require 'httparty'
 require 'octokit'
 require 'jenkins_api_client'
 require 'uri'
-require_relative '../lib/github_status_reporter'
+require_relative '../lib/zooniverse_github'
 
 module Lita
   module Handlers
@@ -20,7 +20,7 @@ module Lita
       config :jenkins_url, default: 'https://jenkins.zooniverse.org'
       config :jenkins_username, required: Lita.required_config?
       config :jenkins_password, required: Lita.required_config?
-      config :github_status_reporter, default: Github::StatusReporter.new
+      config :github, default: Zooniverse::Github.new
 
       # Jenkins jobs to help with OPS work
       route(/^clear static cache/, :clear_static_cache, command: true, help: {"clear static cache" => "Clears the static cache (duh)"})
@@ -52,12 +52,20 @@ module Lita
       end
 
       def tag_deploy(response)
-        jenkins_job_name = JOBS.fetch('deploy')
         repo_name = repo_name_without_whitespace(response.matches[0][1])
-        track_deploy_data_in_redis(repo_name)
-        build_jenkins_job(response, jenkins_job_name, { 'REPO' => repo_name })
-      rescue Lita::Github::StatusReporter::UnknonwnRepoCommit => e
-        response.reply("Failed to deploy: #{e.message}")
+        begin
+          tag = config.github.update_production_tag(repo_name)
+          response.reply("Deployment tag '#{tag}' was successfully updated for #{repo_name}.")
+        rescue Lita::Zooniverse::Github::RefAlreadyDeployed => e
+          response.reply("Deploy cancelled: #{e.message}")
+        rescue Lita::Zooniverse::Github::UnknownRepoCommit => e
+          response.reply("Failed to deploy: #{e.message}")
+        rescue Octokit::Error => e
+          response.reply("Failed to update tag: #{e.message}")
+        else
+          # Track the deploy if no exception is thrown
+          track_deploy_data_in_redis(repo_name)
+        end
       end
 
       def tag_migrate(response)
@@ -82,14 +90,14 @@ module Lita
       def commit_history(response)
         repo_name = repo_name_without_whitespace(response.matches[0][1])
         last_deployed_commits = redis.lrange(repo_name_commit_history_list(repo_name), 0, -1)
-        repo_name = config.github_status_reporter.orgify_repo_name(repo_name)
+        repo_name = config.github.orgify_repo_name(repo_name)
         last_deployed_commits.map { |commit_id| commit_url_format(repo_name, commit_id) }
         output = "Last Deployed Commits (most recent is higher):\n#{last_deployed_commits.join("\n")}"
         response.reply(output)
       end
 
       private
-      
+
       # ensure no leading/trailing whitespaces etc in the name
       def repo_name_without_whitespace(repo_name)
         repo_name.strip
@@ -121,7 +129,7 @@ module Lita
       end
 
       def status_response(repo_name)
-        gh_status_response = config.github_status_reporter.get_repo_status(repo_name)
+        gh_status_response = config.github.get_repo_status(repo_name)
         if gh_status_response.status == :error
           # remove the repo from our tracking set for status all reports
           redis.zrem(DEPLOY_REPOS_SET_NAME, repo_name)
@@ -132,7 +140,7 @@ module Lita
       def track_deploy_data_in_redis(repo_name)
         # Track in redis sorted set which systems we are deploying
         # and track their last 10 commit histories using a capped list
-        commit_id = config.github_status_reporter.get_latest_commit(repo_name)
+        commit_id = config.github.get_latest_commit(repo_name)
         commit_history_list = repo_name_commit_history_list(repo_name)
 
         redis.multi do
