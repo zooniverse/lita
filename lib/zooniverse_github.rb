@@ -29,7 +29,6 @@ module Lita
 
       JSON_COMMIT_ID_KEYS = %w[revision commit_id].freeze
       DEPLOYED_BRANCH_REPOS = {
-        'zooniverse/talk-api' => 'production',
         'zooniverse/zoo-stats-api-graphql' => 'master'
       }.freeze
       GH_PREVIEW_API_HEADERS = {
