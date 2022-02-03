@@ -10,11 +10,6 @@ module Lita
   module Handlers
     class Deployment < Handler
 
-      JOBS = {
-        "deploy" => "Update production-release tag",
-        "migrate" => "Update production-migrate tag"
-      }
-
       DEPLOY_REPOS_SET_NAME = 'deploy-repos'
 
       config :jenkins_url, default: 'https://jenkins.zooniverse.org'
@@ -69,8 +64,9 @@ module Lita
       end
 
       def tag_migrate(response)
-        jenkins_job_name = JOBS.fetch('migrate')
-        build_jenkins_job(response, jenkins_job_name, { 'REPO' => repo_name_without_whitespace(response.matches[0][1]) })
+        repo_name = repo_name_without_whitespace(response.matches[0][1])
+        tag = config.github.update_production_migrate_tag(repo_name)
+        response.reply("Deployment tag '#{tag}' was successfully updated for #{repo_name}.")
       end
 
       def status(response)
