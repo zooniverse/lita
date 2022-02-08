@@ -97,18 +97,28 @@ module Lita
 
       def update_production_tag(repo_name)
         full_repo_name = orgify_repo_name(repo_name)
-        deploy_ref = 'tags/' + production_release_tag(full_repo_name)
+        deploy_ref = "tags/#{production_release_tag(full_repo_name)}"
+        update_tag(full_repo_name, deploy_ref)
+      end
 
+      def update_production_migrate_tag(repo_name)
+        full_repo_name = orgify_repo_name(repo_name)
+        deploy_ref = 'tags/production-migrate'
+        update_tag(full_repo_name, deploy_ref)
+      end
+
+      private
+
+      def update_tag(full_repo_name, deploy_ref)
         head_commit_id = octokit_client.refs(full_repo_name, primary_ref(full_repo_name)).object.sha
         commit_at_tag = octokit_client.refs(full_repo_name, deploy_ref).object.sha
 
         raise RefAlreadyDeployed, 'HEAD and tag commit SHAs match, ref already deployed' if head_commit_id == commit_at_tag
+
         update_ref_response = octokit_client.update_ref(full_repo_name, deploy_ref, head_commit_id)
         # Return name of updated tag
         update_ref_response[:ref].split('/')[2]
       end
-
-      private
 
       def status_error_response(msg, repo_url, error_prefix='Failed to fetch the deployed commit for this repo.')
         "#{error_prefix}\n#{msg} - #{repo_url}"
