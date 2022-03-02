@@ -116,7 +116,6 @@ module Lita
       private
 
       def query_without_after
-        puts 'MDY114 HITS HERE'
         <<-GRAPHQL
           {
             organization(login: "zooniverse") {
@@ -148,7 +147,6 @@ module Lita
       end
 
       def query_with_after(after)
-        puts 'MDY114 HITS AFTER'
         <<-GRAPHQL
         {
           organization(login: "zooniverse") {

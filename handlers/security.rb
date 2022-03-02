@@ -27,6 +27,7 @@ module Lita
           nodes.each do |node|
             node_alerts = node['vulnerabilityAlerts']['nodes']
             repo_name = node['name']
+            next if repos_to_skip.include? repo_name
             next if node_alerts.empty?
 
             node_alerts.each do |alert|
@@ -38,11 +39,24 @@ module Lita
           end
           repo_count = edges.length
           last_repo_listed = edges[repo_count - 1]['cursor']
-          puts last_repo_listed
           get_issues = false if repo_count < 100
         end
 
-        response.reply("Alerts #{alerts}")
+        response.reply("#{alerts.length} Alerts : \n #{format_alerts(alerts)} #{alerts.length}")
+      end
+
+      private
+
+      def repos_to_skip
+        %w[next-cookie-auth-panoptes Cellect science-gossip-data seven-ten Seven-Ten-Client]
+      end
+
+      def format_alerts(alerts)
+        formatted_alerts = "\n"
+        alerts.each do |alert|
+          formatted_alerts += "#{alert}\n"
+        end
+        formatted_alerts
       end
 
       Lita.register_handler(self)
