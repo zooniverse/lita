@@ -107,7 +107,77 @@ module Lita
         update_tag(full_repo_name, deploy_ref)
       end
 
+      def get_dependabot_issues(last_repo_listed)
+        query = last_repo_listed.nil? ? query_without_after : query_with_after(last_repo_listed)
+
+        octokit_client.post '/graphql', { query: query }.to_json
+      end
+
       private
+
+      def query_without_after
+        puts 'MDY114 HITS HERE'
+        <<-GRAPHQL
+          {
+            organization(login: "zooniverse") {
+            repositories(orderBy: {field: NAME, direction: ASC}, first: 100) {
+              edges {
+                cursor
+                node {
+                  name
+                }
+              }
+              nodes {
+                name
+                vulnerabilityAlerts(first: 100) {
+                  nodes {
+                    securityVulnerability {
+                      package {
+                        name
+                      }
+                      severity
+                    }
+                    dismissedAt
+                  }
+                }
+              }
+            }
+          }
+        }
+        GRAPHQL
+      end
+
+      def query_with_after(after)
+        puts 'MDY114 HITS AFTER'
+        <<-GRAPHQL
+        {
+          organization(login: "zooniverse") {
+            repositories(orderBy: {field: NAME, direction: ASC}, first: 100, after: "#{after}") {
+              edges {
+                cursor
+                node {
+                  name
+                }
+              }
+              nodes {
+                name
+                vulnerabilityAlerts(first: 100) {
+                  nodes {
+                    securityVulnerability {
+                      package {
+                        name
+                      }
+                      severity
+                    }
+                    dismissedAt
+                  }
+                }
+              }
+            }
+          }
+        }
+        GRAPHQL
+      end
 
       def update_tag(full_repo_name, deploy_ref)
         head_commit_id = octokit_client.refs(full_repo_name, primary_ref(full_repo_name)).object.sha
