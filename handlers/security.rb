@@ -31,18 +31,7 @@ module Lita
             next if repos_to_skip.include? repo_name
             next if node_alerts.empty?
 
-            node_alerts.each do |alert|
-              next unless alert['dismissedAt'].nil?
-              next unless alert['fixedAt'].nil?
-
-              vulnerability = alert['securityVulnerability']
-              alerts << { repo_name => vulnerability }
-              if repo_to_alert_count[repo_name].nil?
-                repo_to_alert_count[repo_name] = 1
-              else
-                repo_to_alert_count[repo_name] += 1
-              end
-            end
+            filter_alerts(node_alerts, alerts, repo_to_alert_count, repo_name)
           end
           repo_count = edges.length
           last_repo_listed = edges[repo_count - 1]['cursor']
@@ -53,6 +42,25 @@ module Lita
       end
 
       private
+
+      def filter_alerts(node_alerts, alerts, repo_to_alert_count, repo_name)
+        node_alerts.each do |alert|
+          next unless alert['dismissedAt'].nil?
+          next unless alert['fixedAt'].nil?
+
+          vulnerability = alert['securityVulnerability']
+          alerts << { repo_name => vulnerability }
+          add_alert_count(repo_to_alert_count, repo_name)
+        end
+      end
+
+      def add_alert_count(repo_to_alert_count, repo_name)
+        if repo_to_alert_count[repo_name].nil?
+          repo_to_alert_count[repo_name] = 1
+        else
+          repo_to_alert_count[repo_name] += 1
+        end
+      end
 
       def repos_to_skip
         %w[next-cookie-auth-panoptes Cellect science-gossip-data seven-ten Seven-Ten-Client]
