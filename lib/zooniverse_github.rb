@@ -137,6 +137,7 @@ module Lita
                       severity
                     }
                     dismissedAt
+                    fixedAt
                   }
                 }
               }
@@ -168,6 +169,7 @@ module Lita
                       severity
                     }
                     dismissedAt
+                    fixedAt
                   }
                 }
               }

@@ -15,6 +15,7 @@ module Lita
         get_issues = true
         last_repo_listed = nil
         alerts = []
+        repo_to_alert_count = {}
 
         while get_issues == true
           res = config.github.get_dependabot_issues(last_repo_listed)
@@ -32,9 +33,15 @@ module Lita
 
             node_alerts.each do |alert|
               next unless alert['dismissedAt'].nil?
+              next unless alert['fixedAt'].nil?
 
               vulnerability = alert['securityVulnerability']
               alerts << { repo_name => vulnerability }
+              if repo_to_alert_count[repo_name].nil?
+                repo_to_alert_count[repo_name] = 1
+              else
+                repo_to_alert_count[repo_name] += 1
+              end
             end
           end
           repo_count = edges.length
@@ -42,7 +49,7 @@ module Lita
           get_issues = false if repo_count < 100
         end
 
-        response.reply("#{alerts.length} Alerts : \n #{format_alerts(alerts)} #{alerts.length}")
+        response.reply("#{alerts.length} Alerts Total: \n #{format_alerts(repo_to_alert_count)}")
       end
 
       private
@@ -51,10 +58,10 @@ module Lita
         %w[next-cookie-auth-panoptes Cellect science-gossip-data seven-ten Seven-Ten-Client]
       end
 
-      def format_alerts(alerts)
+      def format_alerts(repo_to_alert_count)
         formatted_alerts = "\n"
-        alerts.each do |alert|
-          formatted_alerts += "#{alert}\n"
+        repo_to_alert_count.each do |repo, count|
+          formatted_alerts += "#{repo} -- #{count}\n"
         end
         formatted_alerts
       end
