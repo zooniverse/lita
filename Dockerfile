@@ -5,7 +5,7 @@ RUN apt-get update && \
   apt-get install --no-install-recommends -y build-essential && \
   apt-get clean && rm -rf /var/lib/apt/lists/*
 
-ARG LITA_ENV=production  
+ARG LITA_ENV=production
 ENV LITA_ENV=$LITA_ENV
 ENV PORT=80
 
