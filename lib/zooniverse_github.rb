@@ -5,12 +5,16 @@ require 'ostruct'
 module Lita
   module Zooniverse
     class Github
-
       class UnknownStatusResponseKey < StandardError; end
+
       class MissingStatusResponse < StandardError; end
+
       class MissingStatusResponseData < StandardError; end
+
       class UnknownServiceUrl < StandardError; end
+
       class UnknownRepoCommit < StandardError; end
+
       class RefAlreadyDeployed < StandardError; end
 
       IRREGULAR_ORG_URLS = {
@@ -35,7 +39,7 @@ module Lita
         'Accept': 'application/vnd.github.groot-preview+json',
         'User-Agent' => 'Httparty'
       }.freeze
-      ORGIFY_REGEX = /\Azooniverse\/.*/.freeze
+      ORGIFY_REGEX = %r{\Azooniverse/.*}.freeze
 
       def orgify_repo_name(repo_name)
         if repo_name.match(ORGIFY_REGEX)
@@ -183,14 +187,17 @@ module Lita
         head_commit_id = octokit_client.refs(full_repo_name, primary_ref(full_repo_name)).object.sha
         commit_at_tag = octokit_client.refs(full_repo_name, deploy_ref).object.sha
 
-        raise RefAlreadyDeployed, 'HEAD and tag commit SHAs match, ref already deployed' if head_commit_id == commit_at_tag
+        if head_commit_id == commit_at_tag
+          raise RefAlreadyDeployed,
+                'HEAD and tag commit SHAs match, ref already deployed'
+        end
 
         update_ref_response = octokit_client.update_ref(full_repo_name, deploy_ref, head_commit_id)
         # Return name of updated tag
         update_ref_response[:ref].split('/')[2]
       end
 
-      def status_error_response(msg, repo_url, error_prefix='Failed to fetch the deployed commit for this repo.')
+      def status_error_response(msg, repo_url, error_prefix = 'Failed to fetch the deployed commit for this repo.')
         "#{error_prefix}\n#{msg} - #{repo_url}"
       end
 

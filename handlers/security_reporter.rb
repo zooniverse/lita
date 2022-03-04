@@ -4,8 +4,7 @@ require 'httparty'
 
 module Lita
   module Handlers
-    # some comment
-    class Security < Handler
+    class SecurityReporter < Handler
       config :github, default: Zooniverse::Github.new
 
       route(/^(dependabot)\s*(.*)/, :get_dependabot_issues, command: true,
@@ -31,7 +30,7 @@ module Lita
             next if repos_to_skip.include? repo_name
             next if node_alerts.empty?
 
-            filter_alerts(node_alerts, alerts, repo_to_alert_count, repo_name)
+            filter_fixed_or_dismissed_alerts node_alerts, alerts, repo_to_alert_count, repo_name
           end
           repo_count = edges.length
           last_repo_listed = edges[repo_count - 1]['cursor']
@@ -55,11 +54,8 @@ module Lita
       end
 
       def add_alert_count(repo_to_alert_count, repo_name)
-        if repo_to_alert_count[repo_name].nil?
-          repo_to_alert_count[repo_name] = 1
-        else
-          repo_to_alert_count[repo_name] += 1
-        end
+        repo_alert_count = repo_to_alert_count[repo_name] || 0
+        repo_to_alert_count[repo_name] = repo_alert_count + 1
       end
 
       def repos_to_skip
