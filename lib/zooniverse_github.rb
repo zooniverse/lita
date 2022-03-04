@@ -108,7 +108,7 @@ module Lita
       end
 
       def get_dependabot_issues(last_repo_listed)
-        query = last_repo_listed.nil? ? query_without_after : query_with_after(last_repo_listed)
+        query = last_repo_listed ? query_with_after(last_repo_listed) : query_without_after
 
         octokit_client.post '/graphql', { query: query }.to_json
       end
