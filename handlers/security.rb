@@ -43,7 +43,7 @@ module Lita
 
       private
 
-      def filter_alerts(node_alerts, alerts, repo_to_alert_count, repo_name)
+      def filter_fixed_or_dismissed_alerts(node_alerts, alerts, repo_to_alert_count, repo_name)
         node_alerts.each do |alert|
           next unless alert['dismissedAt'].nil?
           next unless alert['fixedAt'].nil?
