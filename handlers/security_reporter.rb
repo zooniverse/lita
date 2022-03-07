@@ -7,8 +7,8 @@ module Lita
     class SecurityReporter < Handler
       config :github, default: Zooniverse::Github.new
 
-      route(/^(dependabot)\s*(.*)/, :get_dependabot_issues, command: true,
-                                                            help: { 'status dependabot' => 'displays dependabot security alerts' })
+      route(/^(security report)\s*(.*)/, :get_dependabot_issues, command: true,
+                                                                 help: { 'status dependabot' => 'displays dependabot security alerts' })
 
       def get_dependabot_issues(response)
         get_issues = true
@@ -18,17 +18,21 @@ module Lita
 
         while get_issues == true
           res = config.github.get_dependabot_issues(last_repo_listed)
-          if res.nil?
-            get_issues = false
-            break
-          end
+
+          break unless res
+
           edges = res['data']['organization']['repositories']['edges']
           nodes = res['data']['organization']['repositories']['nodes']
           nodes.each do |node|
             node_alerts = node['vulnerabilityAlerts']['nodes']
-            repo_name = node['name']
-            next if repos_to_skip.include? repo_name
             next if node_alerts.empty?
+
+            repo_name = node['name']
+
+            @repos_to_skip ||= %w[next-cookie-auth-panoptes Cellect science-gossip-data seven-ten
+                                  Seven-Ten-Client].map(&:downcase)
+
+            next if @repos_to_skip.include? repo_name.downcase
 
             filter_fixed_or_dismissed_alerts node_alerts, alerts, repo_to_alert_count, repo_name
           end
@@ -44,8 +48,8 @@ module Lita
 
       def filter_fixed_or_dismissed_alerts(node_alerts, alerts, repo_to_alert_count, repo_name)
         node_alerts.each do |alert|
-          next unless alert['dismissedAt'].nil?
-          next unless alert['fixedAt'].nil?
+          next if alert['dismissedAt']
+          next if alert['fixedAt']
 
           vulnerability = alert['securityVulnerability']
           alerts << { repo_name => vulnerability }
@@ -58,16 +62,8 @@ module Lita
         repo_to_alert_count[repo_name] = repo_alert_count + 1
       end
 
-      def repos_to_skip
-        %w[next-cookie-auth-panoptes Cellect science-gossip-data seven-ten Seven-Ten-Client]
-      end
-
       def format_alerts(repo_to_alert_count)
-        formatted_alerts = "\n"
-        repo_to_alert_count.each do |repo, count|
-          formatted_alerts += "#{repo} -- #{count}\n"
-        end
-        formatted_alerts
+        repo_to_alert_count.map { |repo, count| "#{repo} -- #{count}" }.join("\n")
       end
 
       Lita.register_handler(self)
