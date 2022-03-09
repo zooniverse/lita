@@ -13,7 +13,6 @@ module Lita
       def get_dependabot_issues(response)
         get_issues = true
         last_repo_listed = nil
-        alerts = []
         repo_to_alert_count = {}
         repo_to_high_alert_count = {}
         repo_to_critical_alert_count = {}
@@ -30,14 +29,14 @@ module Lita
             node_alerts = node['vulnerabilityAlerts']['nodes']
             next if node_alerts.empty?
 
-            repo_name = node['name'].downcase
+            repo_name = node['name']
 
             @repos_to_skip ||= %w[next-cookie-auth-panoptes science-gossip-data seven-ten
                                   Seven-Ten-Client].map(&:downcase)
 
-            next if @repos_to_skip.include? repo_name
+            next if @repos_to_skip.include? repo_name.downcase
 
-            filter_fixed_or_dismissed_alerts node_alerts, alerts, repo_to_alert_count, repo_name,
+            filter_fixed_or_dismissed_alerts node_alerts, repo_to_alert_count, repo_name,
                                              repo_to_high_alert_count, repo_to_critical_alert_count
           end
           repo_count = edges.length
@@ -45,16 +44,20 @@ module Lita
           get_issues = false if repo_count < 100
         end
 
-        response.reply("#{alerts.length} Alerts Total: \n #{format_alerts(repo_to_alert_count,
-                                                                          repo_to_high_alert_count, repo_to_critical_alert_count)}")
+        summary = "#{total_alert_count(repo_to_alert_count)} Alerts Total (#{total_alert_count(repo_to_high_alert_count)} HIGH; #{total_alert_count(repo_to_critical_alert_count)} CRITICAL):"
+        response.reply("#{summary}: \n #{format_alerts(repo_to_alert_count, repo_to_high_alert_count,
+                                                       repo_to_critical_alert_count)}")
       end
 
       private
 
-      def filter_fixed_or_dismissed_alerts(node_alerts, alerts, repo_to_alert_count, repo_name, repo_to_high_alert_count, repo_to_critical_alert_count)
+      def total_alert_count(repo_to_alert_count)
+        repo_to_alert_count.reduce(0) { |sum, (_, count)| sum + count }
+      end
+
+      def filter_fixed_or_dismissed_alerts(node_alerts, repo_to_alert_count, repo_name, repo_to_high_alert_count, repo_to_critical_alert_count)
         node_alerts.each do |alert|
           vulnerability = alert['securityVulnerability']
-          alerts << { repo_name => vulnerability }
           add_alert_count(repo_to_alert_count, repo_name)
 
           severity = vulnerability['severity'].downcase
