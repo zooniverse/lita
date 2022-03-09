@@ -132,7 +132,6 @@ module Lita
               }
               nodes {
                 name
-                resourcePath
                 vulnerabilityAlerts(first: 100, states: OPEN) {
                   nodes {
                     securityVulnerability {
@@ -165,7 +164,6 @@ module Lita
               }
               nodes {
                 name
-                resourcePath
                 vulnerabilityAlerts(first: 100, states: OPEN) {
                   nodes {
                     securityVulnerability {
