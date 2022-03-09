@@ -15,6 +15,9 @@ module Lita
         last_repo_listed = nil
         alerts = []
         repo_to_alert_count = {}
+        repo_to_high_alert_count = {}
+        repo_to_critical_alert_count = {}
+        repo_to_package_count = {}
 
         while get_issues == true
           res = config.github.get_dependabot_issues(last_repo_listed)
@@ -27,33 +30,36 @@ module Lita
             node_alerts = node['vulnerabilityAlerts']['nodes']
             next if node_alerts.empty?
 
-            repo_name = node['name']
+            repo_name = node['name'].downcase
 
-            @repos_to_skip ||= %w[next-cookie-auth-panoptes Cellect science-gossip-data seven-ten
+            @repos_to_skip ||= %w[next-cookie-auth-panoptes science-gossip-data seven-ten
                                   Seven-Ten-Client].map(&:downcase)
 
-            next if @repos_to_skip.include? repo_name.downcase
+            next if @repos_to_skip.include? repo_name
 
-            filter_fixed_or_dismissed_alerts node_alerts, alerts, repo_to_alert_count, repo_name
+            filter_fixed_or_dismissed_alerts node_alerts, alerts, repo_to_alert_count, repo_name,
+                                             repo_to_high_alert_count, repo_to_critical_alert_count
           end
           repo_count = edges.length
           last_repo_listed = edges[repo_count - 1]['cursor']
           get_issues = false if repo_count < 100
         end
 
-        response.reply("#{alerts.length} Alerts Total: \n #{format_alerts(repo_to_alert_count)}")
+        response.reply("#{alerts.length} Alerts Total: \n #{format_alerts(repo_to_alert_count,
+                                                                          repo_to_high_alert_count, repo_to_critical_alert_count)}")
       end
 
       private
 
-      def filter_fixed_or_dismissed_alerts(node_alerts, alerts, repo_to_alert_count, repo_name)
+      def filter_fixed_or_dismissed_alerts(node_alerts, alerts, repo_to_alert_count, repo_name, repo_to_high_alert_count, repo_to_critical_alert_count)
         node_alerts.each do |alert|
-          next if alert['dismissedAt']
-          next if alert['fixedAt']
-
           vulnerability = alert['securityVulnerability']
           alerts << { repo_name => vulnerability }
           add_alert_count(repo_to_alert_count, repo_name)
+
+          severity = vulnerability['severity'].downcase
+          add_alert_count(repo_to_high_alert_count, repo_name) if severity == 'high'
+          add_alert_count(repo_to_critical_alert_count, repo_name) if severity == 'critical'
         end
       end
 
@@ -62,8 +68,10 @@ module Lita
         repo_to_alert_count[repo_name] = repo_alert_count + 1
       end
 
-      def format_alerts(repo_to_alert_count)
-        repo_to_alert_count.map { |repo, count| "#{repo} -- #{count}" }.join("\n")
+      def format_alerts(repo_to_alert_count, repo_to_high_alert_count, repo_to_critical_alert_count)
+        repo_to_alert_count.map do |repo, count|
+          "[#{repo}](https://github.com/zooniverse/#{repo}/security/dependabot) -- #{count} (#{repo_to_high_alert_count[repo] || 0} HIGH; #{repo_to_critical_alert_count[repo] || 0} CRITICAL)"
+        end.join("\n")
       end
 
       Lita.register_handler(self)
