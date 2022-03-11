@@ -36,7 +36,7 @@ module Lita
 
             next if @repos_to_skip.include? repo_name.downcase
 
-            filter_fixed_or_dismissed_alerts node_alerts, repo_to_alert_count, repo_name,
+            categorize_alerts_by_severity node_alerts, repo_to_alert_count, repo_name,
                                              repo_to_high_alert_count, repo_to_critical_alert_count, repo_to_reported_packages
           end
           repo_count = edges.length
@@ -55,7 +55,7 @@ module Lita
         repo_to_alert_count.reduce(0) { |sum, (_, count)| sum + count }
       end
 
-      def filter_fixed_or_dismissed_alerts(node_alerts, repo_to_alert_count, repo_name, repo_to_high_alert_count, repo_to_critical_alert_count, repo_to_reported_packages)
+      def categorize_alerts_by_severity(node_alerts, repo_to_alert_count, repo_name, repo_to_high_alert_count, repo_to_critical_alert_count, repo_to_reported_packages)
         node_alerts.each do |alert|
           vulnerability = alert['securityVulnerability']
           add_alert_count(repo_to_alert_count, repo_name)
