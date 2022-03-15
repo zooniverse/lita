@@ -13,8 +13,13 @@ module Lita
       def get_dependabot_issues(response)
         get_issues = true
         last_repo_listed = nil
-        alerts = []
         repo_to_alert_count = {}
+        repo_to_alert_count.default = 0
+        repo_to_high_alert_count = {}
+        repo_to_high_alert_count.default = 0
+        repo_to_critical_alert_count = {}
+        repo_to_critical_alert_count.default = 0
+        repo_to_reported_packages = {}
 
         while get_issues == true
           res = config.github.get_dependabot_issues(last_repo_listed)
@@ -29,41 +34,59 @@ module Lita
 
             repo_name = node['name']
 
-            @repos_to_skip ||= %w[next-cookie-auth-panoptes Cellect science-gossip-data seven-ten
+            @repos_to_skip ||= %w[next-cookie-auth-panoptes science-gossip-data seven-ten
                                   Seven-Ten-Client].map(&:downcase)
 
             next if @repos_to_skip.include? repo_name.downcase
 
-            filter_fixed_or_dismissed_alerts node_alerts, alerts, repo_to_alert_count, repo_name
+            categorize_alerts_by_severity node_alerts, repo_to_alert_count, repo_name,
+                                             repo_to_high_alert_count, repo_to_critical_alert_count, repo_to_reported_packages
           end
           repo_count = edges.length
           last_repo_listed = edges[repo_count - 1]['cursor']
           get_issues = false if repo_count < 100
         end
 
-        response.reply("#{alerts.length} Alerts Total: \n #{format_alerts(repo_to_alert_count)}")
+        summary = "#{total_alert_count(repo_to_alert_count)} Alerts Total (#{total_alert_count(repo_to_high_alert_count)} HIGH; #{total_alert_count(repo_to_critical_alert_count)} CRITICAL)"
+        response.reply("#{summary}: \n#{format_alerts(repo_to_alert_count, repo_to_high_alert_count,
+                                                      repo_to_critical_alert_count, repo_to_reported_packages)}")
       end
 
       private
 
-      def filter_fixed_or_dismissed_alerts(node_alerts, alerts, repo_to_alert_count, repo_name)
-        node_alerts.each do |alert|
-          next if alert['dismissedAt']
-          next if alert['fixedAt']
+      def total_alert_count(repo_to_alert_count)
+        repo_to_alert_count.reduce(0) { |sum, (_, count)| sum + count }
+      end
 
+      def categorize_alerts_by_severity(node_alerts, repo_to_alert_count, repo_name, repo_to_high_alert_count, repo_to_critical_alert_count, repo_to_reported_packages)
+        node_alerts.each do |alert|
           vulnerability = alert['securityVulnerability']
-          alerts << { repo_name => vulnerability }
           add_alert_count(repo_to_alert_count, repo_name)
+
+          severity = vulnerability['severity'].downcase
+          add_alert_count(repo_to_high_alert_count, repo_name) if severity == 'high'
+          add_alert_count(repo_to_critical_alert_count, repo_name) if severity == 'critical'
+
+          package_name = vulnerability['package']['name'].downcase
+          add_unique_reported_packages(repo_to_reported_packages, repo_name, package_name)
         end
       end
 
+      def add_unique_reported_packages(repo_to_reported_packages, repo_name, package_name)
+        packages = repo_to_reported_packages[repo_name] || []
+        packages << package_name unless packages.include? package_name
+        repo_to_reported_packages[repo_name] = packages
+      end
+
       def add_alert_count(repo_to_alert_count, repo_name)
-        repo_alert_count = repo_to_alert_count[repo_name] || 0
+        repo_alert_count = repo_to_alert_count[repo_name]
         repo_to_alert_count[repo_name] = repo_alert_count + 1
       end
 
-      def format_alerts(repo_to_alert_count)
-        repo_to_alert_count.map { |repo, count| "#{repo} -- #{count}" }.join("\n")
+      def format_alerts(repo_to_alert_count, repo_to_high_alert_count, repo_to_critical_alert_count, repo_to_reported_packages)
+        repo_to_alert_count.map do |repo, count|
+          "[#{repo}](https://github.com/zooniverse/#{repo}/security/dependabot) -- #{count} (#{repo_to_high_alert_count[repo]} HIGH; #{repo_to_critical_alert_count[repo]} CRITICAL) #{repo_to_reported_packages[repo].length} flagged packages"
+        end.join("\n")
       end
 
       Lita.register_handler(self)
