@@ -14,8 +14,11 @@ module Lita
         get_issues = true
         last_repo_listed = nil
         repo_to_alert_count = {}
+        repo_to_alert_count.default = 0
         repo_to_high_alert_count = {}
+        repo_to_high_alert_count.default = 0
         repo_to_critical_alert_count = {}
+        repo_to_critical_alert_count.default = 0
         repo_to_reported_packages = {}
 
         while get_issues == true
@@ -76,13 +79,13 @@ module Lita
       end
 
       def add_alert_count(repo_to_alert_count, repo_name)
-        repo_alert_count = repo_to_alert_count[repo_name] || 0
+        repo_alert_count = repo_to_alert_count[repo_name]
         repo_to_alert_count[repo_name] = repo_alert_count + 1
       end
 
       def format_alerts(repo_to_alert_count, repo_to_high_alert_count, repo_to_critical_alert_count, repo_to_reported_packages)
         repo_to_alert_count.map do |repo, count|
-          "[#{repo}](https://github.com/zooniverse/#{repo}/security/dependabot) -- #{count} (#{repo_to_high_alert_count[repo] || 0} HIGH; #{repo_to_critical_alert_count[repo] || 0} CRITICAL) #{repo_to_reported_packages[repo].length} flagged packages"
+          "[#{repo}](https://github.com/zooniverse/#{repo}/security/dependabot) -- #{count} (#{repo_to_high_alert_count[repo]} HIGH; #{repo_to_critical_alert_count[repo]} CRITICAL) #{repo_to_reported_packages[repo].length} flagged packages"
         end.join("\n")
       end
 
