@@ -31,6 +31,7 @@ Lita.configure do |config|
 
     ## Example: Set options for the chosen adapter.
     config.adapters.slack.token = ENV["SLACK_TOKEN"]
+    config.adapters.slack.parse = "mrkdwn"
   end
 
   config.http.port = ENV["PORT"] || 80
