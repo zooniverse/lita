@@ -47,7 +47,7 @@ module Lita
           get_issues = false if repo_count < 100
         end
 
-        summary = "#{total_alert_count(repo_to_alert_count)} Alerts Total (#{total_alert_count(repo_to_high_alert_count)} HIGH; #{total_alert_count(repo_to_critical_alert_count)} CRITICAL)"
+        summary = "*#{total_alert_count(repo_to_alert_count)} Alerts Total (#{total_alert_count(repo_to_high_alert_count)} HIGH; #{total_alert_count(repo_to_critical_alert_count)} CRITICAL)*"
         response.reply("#{summary}: \n#{format_alerts(repo_to_alert_count, repo_to_high_alert_count,
                                                       repo_to_critical_alert_count, repo_to_reported_packages)}")
       end
@@ -85,7 +85,7 @@ module Lita
 
       def format_alerts(repo_to_alert_count, repo_to_high_alert_count, repo_to_critical_alert_count, repo_to_reported_packages)
         repo_to_alert_count.map do |repo, count|
-          "[#{repo}](https://github.com/zooniverse/#{repo}/security/dependabot) -- #{count} (#{repo_to_high_alert_count[repo]} HIGH; #{repo_to_critical_alert_count[repo]} CRITICAL) #{repo_to_reported_packages[repo].length} flagged packages"
+          "<https://github.com/zooniverse/#{repo}/security/dependabot | #{repo}> -- #{count} (#{repo_to_high_alert_count[repo]} HIGH; #{repo_to_critical_alert_count[repo]} CRITICAL) #{repo_to_reported_packages[repo].length} flagged packages"
         end.join("\n")
       end
 
