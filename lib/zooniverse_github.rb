@@ -204,7 +204,7 @@ module Lita
       def get_app_status(repo_name, deployed_version, prod_tag)
         git_responses = {}
         ['HEAD', prod_tag].each do |tag|
-          comparison = Octokit.compare(repo_name, deployed_version.strip, tag)
+          comparison = octokit_client.compare(repo_name, deployed_version.strip, tag)
           if comparison.commits.empty?
             git_responses[tag] = 'is the currently deployed version.'
           else
