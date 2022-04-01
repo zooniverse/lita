@@ -24,7 +24,8 @@ module Lita
         'zooniverse/pandora' => 'https://translations.zooniverse.org/commit_id.txt',
         'zooniverse/talk-api' => 'https://talk.zooniverse.org/commit_id.txt',
         'zooniverse/zoo-stats-api-graphql' => 'https://graphql-stats.zooniverse.org',
-        'zooniverse/zoo-event-stats' => 'https://stats.zooniverse.org/'
+        'zooniverse/zoo-event-stats' => 'https://stats.zooniverse.org/',
+        'zooniverse/aggregation-for-caesar' => 'https://aggregation-caesar.zooniverse.org/'
       }.freeze
 
       # Repos that do not use heads/master as their primary ref
