@@ -54,6 +54,10 @@ module Lita
 
       private
 
+      def filter_without_whitespace(filter)
+        filter.strip
+      end
+
       def total_alert_count(repo_to_alert_count)
         repo_to_alert_count.reduce(0) { |sum, (_, count)| sum + count }
       end
