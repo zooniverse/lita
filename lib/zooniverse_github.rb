@@ -120,6 +120,14 @@ module Lita
         octokit_client.post '/graphql', { query: query }.to_json
       end
 
+      def run_workflow(repo_name, workflow, branch, inputs={})
+        params = {
+          ref: 'refs/heads/#{branch}',
+          inputs: inputs
+        }
+        octokit_client.post("/repos/zooniverse/#{repo_name}/actions/workflows/#{workflow}/dispatches", params)
+      end
+
       private
 
       def query_without_after

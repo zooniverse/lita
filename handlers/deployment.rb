@@ -34,9 +34,11 @@ module Lita
       #        and in use for all K8s deployed services
       route(/^(deploy)\s*(.*)/, :tag_deploy, command: true, help: {"deploy REPO" => "Updates the production-release tag on zooniverse/REPO"})
       route(/^(migrate)\s*(.*)/, :tag_migrate, command: true, help: {"migrate REPO" => "Updates the production-migrate tag on zooniverse/REPO"})
-      route(/^(status\s*all)/, :status_all, command: true, help: {'staus all' => 'Returns the deployment status for all previously deployed $REPO_NAMES.'})
+      route(/^(status\s*all)/, :status_all, command: true, help: {'status all' => 'Returns the deployment status for all previously deployed $REPO_NAMES.'})
       route(/^(status|version)\s+(?!all)(.+)/, :status, command: true, help: {'status REPO_NAME' => 'Returns the state of commits not deployed for the $REPO_NAME.'})
       route(/^(history)\s(.+)/, :commit_history, command: true, help: {'history REPO_NAME' => 'Returns the last deployed commit history (max 10) .'})
+      route(/^(static)\s(.+)/, :static, command: true, help: {'static ACTION' => 'Runs the specified static repo action'})
+      route(/^(action)\s(.+)/, :action, command: true, help: {'action REPO FILE BRANCH' => 'Runs the specified repo action on the specified branch'})
 
       def clear_static_cache(response)
         build_jenkins_job(response, "Clear static cache")
@@ -90,6 +92,37 @@ module Lita
         last_deployed_commits.map { |commit_id| commit_url_format(repo_name, commit_id) }
         output = "Last Deployed Commits (most recent is higher):\n#{last_deployed_commits.join("\n")}"
         response.reply(output)
+      end
+
+      def static(response)
+        workflow_actions = {
+          nginx: 'deploy_nginx.yml',
+          ingress: 'apply_ingresses.yml'
+        }
+        workflow = response.matches[0][1]
+        begin
+          config.github.run_workflow('static', workflow_actions[workflow], 'master')
+        rescue Octokit::NotFound => e
+          response.reply ("Repo or workflow not found")
+        rescue Octokit::UnprocessableEntity
+          response.reply ("Branch not found")
+        else
+          response.reply("Static repo action '#{workflow}' successfully initiated.")
+        end
+      end
+
+      def action(response)
+        repo, filename, branch = response.matches[0][1].split(' ')
+
+        begin
+          config.github.run_workflow(repo, filename, 'master')
+        rescue Octokit::NotFound => e
+          response.reply ("Repo or workflow not found")
+        rescue Octokit::UnprocessableEntity
+          response.reply ("Branch not found")
+        else
+          response.reply("Action #{filename} on #{repo}/#{branch} successfully initiated.")
+        end
       end
 
       private
