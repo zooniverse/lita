@@ -25,6 +25,7 @@ module Lita
         command: true,
         help: { 'rebuild subject-set-search API' => 'Rebuild subject-set-search API with new data' }
       )
+      route(/^(apply ingresses)\s(.+)/, :apply_ingresses, command: true, help: {'apply ingresses' => 'Runs the apply_ingresses action in the static repo'})
 
       # New K8s deployment template
       # updates the production release tag on the supplied repo (\s*.(*))
@@ -37,8 +38,6 @@ module Lita
       route(/^(status\s*all)/, :status_all, command: true, help: {'status all' => 'Returns the deployment status for all previously deployed $REPO_NAMES.'})
       route(/^(status|version)\s+(?!all)(.+)/, :status, command: true, help: {'status REPO_NAME' => 'Returns the state of commits not deployed for the $REPO_NAME.'})
       route(/^(history)\s(.+)/, :commit_history, command: true, help: {'history REPO_NAME' => 'Returns the last deployed commit history (max 10) .'})
-      route(/^(static)\s(.+)/, :static, command: true, help: {'static ACTION' => 'Runs the specified static repo action'})
-      route(/^(action)\s(.+)/, :action, command: true, help: {'action REPO FILE BRANCH' => 'Runs the specified repo action on the specified branch'})
 
       def clear_static_cache(response)
         build_jenkins_job(response, "Clear static cache")
@@ -94,34 +93,15 @@ module Lita
         response.reply(output)
       end
 
-      def static(response)
-        workflow_actions = {
-          nginx: 'deploy_nginx.yml',
-          ingress: 'apply_ingresses.yml'
-        }
-        workflow = response.matches[0][1]
+      def apply_ingresses(response)
         begin
-          config.github.run_workflow('static', workflow_actions[workflow], 'master')
+          config.github.run_workflow('static', 'apply_ingresses.yml', 'master')
         rescue Octokit::NotFound => e
           response.reply ("Repo or workflow not found")
         rescue Octokit::UnprocessableEntity
           response.reply ("Branch not found")
         else
-          response.reply("Static repo action '#{workflow}' successfully initiated.")
-        end
-      end
-
-      def action(response)
-        repo, filename, branch = response.matches[0][1].split(' ')
-
-        begin
-          config.github.run_workflow(repo, filename, 'master')
-        rescue Octokit::NotFound => e
-          response.reply ("Repo or workflow not found")
-        rescue Octokit::UnprocessableEntity
-          response.reply ("Branch not found")
-        else
-          response.reply("Action #{filename} on #{repo}/#{branch} successfully initiated.")
+          response.reply("Ingress application successfully initiated.")
         end
       end
 
