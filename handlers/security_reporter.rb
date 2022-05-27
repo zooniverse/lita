@@ -89,7 +89,7 @@ module Lita
 
       def format_alerts(repo_to_alert_count, repo_to_high_alert_count, repo_to_critical_alert_count, repo_to_reported_packages)
         repo_to_alert_count.map do |repo, count|
-          "<https://github.com/zooniverse/#{repo}/security/dependabot | #{repo}> -- #{count} (#{repo_to_high_alert_count[repo]} HIGH; #{repo_to_critical_alert_count[repo]} CRITICAL) #{repo_to_reported_packages[repo].length} flagged packages"
+          "<https://github.com/zooniverse/#{repo}/security/dependabot|#{repo}> -- #{count} (#{repo_to_high_alert_count[repo]} HIGH; #{repo_to_critical_alert_count[repo]} CRITICAL) #{repo_to_reported_packages[repo].length} flagged packages"
         end.join("\n")
       end
 
