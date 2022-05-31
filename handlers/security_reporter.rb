@@ -11,6 +11,7 @@ module Lita
                                                                  help: { 'status dependabot' => 'displays dependabot security alerts' })
 
       def get_dependabot_issues(response)
+        filter = filter_without_whitespace(response.matches[0][1])
         get_issues = true
         last_repo_listed = nil
         repo_to_alert_count = {}
