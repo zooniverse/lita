@@ -25,7 +25,7 @@ module Lita
         command: true,
         help: { 'rebuild subject-set-search API' => 'Rebuild subject-set-search API with new data' }
       )
-      route(/^(apply ingresses)\s(.+)/, :apply_ingresses, command: true, help: {'apply ingresses' => 'Runs the apply_ingresses action in the static repo'})
+      route(/^apply ingresses/, :apply_ingresses, command: true, help: {"apply ingresses" => "Applies the ingress templates in the static repo"})
 
       # New K8s deployment template
       # updates the production release tag on the supplied repo (\s*.(*))
@@ -70,6 +70,12 @@ module Lita
         response.reply("Deployment tag '#{tag}' was successfully updated for #{repo_name}.")
       end
 
+      def apply_ingresses(response)
+        deploy_ref = 'tags/production-ingresses'
+        update_tag('zooniverse/static', deploy_ref)
+        response.reply("Ingress tag was successfully updated for static.")
+      end
+
       def status(response)
         repo_name = repo_name_without_whitespace(response.matches[0][1])
         response.reply(status_response(repo_name))
@@ -91,18 +97,6 @@ module Lita
         last_deployed_commits.map { |commit_id| commit_url_format(repo_name, commit_id) }
         output = "Last Deployed Commits (most recent is higher):\n#{last_deployed_commits.join("\n")}"
         response.reply(output)
-      end
-
-      def apply_ingresses(response)
-        begin
-          config.github.run_workflow('static', 'apply_ingresses.yml', 'master')
-        rescue Octokit::NotFound => e
-          response.reply ("Repo or workflow not found")
-        rescue Octokit::UnprocessableEntity
-          response.reply ("Branch not found")
-        else
-          response.reply("Ingress application successfully initiated.")
-        end
       end
 
       private
