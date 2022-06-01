@@ -71,8 +71,7 @@ module Lita
       end
 
       def apply_ingresses(response)
-        deploy_ref = 'tags/production-ingresses'
-        update_tag('zooniverse/static', deploy_ref)
+        config.github.update_production_ingresses_tag
         response.reply("Ingress tag was successfully updated for static.")
       end
 

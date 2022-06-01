@@ -114,6 +114,10 @@ module Lita
         update_tag(full_repo_name, deploy_ref)
       end
 
+      def update_production_ingresses_tag
+        update_tag('zooniverse/static', 'tags/production-ingresses')
+      end
+
       def get_dependabot_issues(last_repo_listed)
         query = last_repo_listed ? query_with_after(last_repo_listed) : query_without_after
 
