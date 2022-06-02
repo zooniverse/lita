@@ -40,8 +40,15 @@ module Lita
 
             next if @repos_to_skip.include? repo_name.downcase
 
-            categorize_alerts_by_severity node_alerts, repo_to_alert_count, repo_name,
-                                             repo_to_high_alert_count, repo_to_critical_alert_count, repo_to_reported_packages, filter
+            if filter.downcase.include? 'this week'
+              categorize_alerts_by_severity_filter_for_this_week(
+                node_alerts, repo_to_alert_count, repo_name,
+                repo_to_high_alert_count, repo_to_critical_alert_count, repo_to_reported_packages)
+            else
+              categorize_alerts_by_severity(node_alerts, repo_to_alert_count, repo_name,
+                                            repo_to_high_alert_count, repo_to_critical_alert_count,
+                                            repo_to_reported_packages)
+            end
           end
           repo_count = edges.length
           last_repo_listed = edges[repo_count - 1]['cursor']
@@ -63,10 +70,24 @@ module Lita
         repo_to_alert_count.reduce(0) { |sum, (_, count)| sum + count }
       end
 
-      def categorize_alerts_by_severity(node_alerts, repo_to_alert_count, repo_name, repo_to_high_alert_count, repo_to_critical_alert_count, repo_to_reported_packages, filter)
+      def categorize_alerts_by_severity_filter_for_this_week(node_alerts, repo_to_alert_count, repo_name, repo_to_high_alert_count, repo_to_critical_alert_count, repo_to_reported_packages)
         node_alerts.each do |alert|
-          next if (filter.downcase.include? 'this week') && (Date.parse(alert['createdAt']) <= (Date.today - 7))
+          next if Date.parse(alert['createdAt']) <= (Date.today - 7)
 
+          vulnerability = alert['securityVulnerability']
+          add_alert_count(repo_to_alert_count, repo_name)
+
+          severity = vulnerability['severity'].downcase
+          add_alert_count(repo_to_high_alert_count, repo_name) if severity == 'high'
+          add_alert_count(repo_to_critical_alert_count, repo_name) if severity == 'critical'
+
+          package_name = vulnerability['package']['name'].downcase
+          add_unique_reported_packages(repo_to_reported_packages, repo_name, package_name)
+        end
+      end
+
+      def categorize_alerts_by_severity(node_alerts, repo_to_alert_count, repo_name, repo_to_high_alert_count, repo_to_critical_alert_count, repo_to_reported_packages)
+        node_alerts.each do |alert|
           vulnerability = alert['securityVulnerability']
           add_alert_count(repo_to_alert_count, repo_name)
 
