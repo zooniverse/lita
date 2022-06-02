@@ -25,6 +25,7 @@ module Lita
         command: true,
         help: { 'rebuild subject-set-search API' => 'Rebuild subject-set-search API with new data' }
       )
+      route(/^apply ingresses/, :apply_ingresses, command: true, help: {"apply ingresses" => "Applies the ingress templates in the static repo"})
 
       # New K8s deployment template
       # updates the production release tag on the supplied repo (\s*.(*))
@@ -34,7 +35,7 @@ module Lita
       #        and in use for all K8s deployed services
       route(/^(deploy)\s*(.*)/, :tag_deploy, command: true, help: {"deploy REPO" => "Updates the production-release tag on zooniverse/REPO"})
       route(/^(migrate)\s*(.*)/, :tag_migrate, command: true, help: {"migrate REPO" => "Updates the production-migrate tag on zooniverse/REPO"})
-      route(/^(status\s*all)/, :status_all, command: true, help: {'staus all' => 'Returns the deployment status for all previously deployed $REPO_NAMES.'})
+      route(/^(status\s*all)/, :status_all, command: true, help: {'status all' => 'Returns the deployment status for all previously deployed $REPO_NAMES.'})
       route(/^(status|version)\s+(?!all)(.+)/, :status, command: true, help: {'status REPO_NAME' => 'Returns the state of commits not deployed for the $REPO_NAME.'})
       route(/^(history)\s(.+)/, :commit_history, command: true, help: {'history REPO_NAME' => 'Returns the last deployed commit history (max 10) .'})
 
@@ -67,6 +68,11 @@ module Lita
         repo_name = repo_name_without_whitespace(response.matches[0][1])
         tag = config.github.update_production_migrate_tag(repo_name)
         response.reply("Deployment tag '#{tag}' was successfully updated for #{repo_name}.")
+      end
+
+      def apply_ingresses(response)
+        config.github.update_production_ingresses_tag
+        response.reply("Ingress tag was successfully updated for static.")
       end
 
       def status(response)
