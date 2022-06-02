@@ -146,6 +146,7 @@ module Lita
                     }
                     dismissedAt
                     fixedAt
+                    createdAt
                   }
                 }
               }
@@ -178,6 +179,7 @@ module Lita
                     }
                     dismissedAt
                     fixedAt
+                    createdAt
                   }
                 }
               }
