@@ -19,15 +19,16 @@ module Lita
 
       # ensure these are all downcased for easy matching
       IRREGULAR_DOWNCASED_ORG_URLS = {
-        'zooniverse/front-end-monorepo' => 'https://fe-project.zooniverse.org/projects/commit_id.txt',
-        'zooniverse/pfe-lab' => 'https://lab.zooniverse.org/commit_id.txt',
-        'zooniverse/panoptes-front-end' => 'https://www.zooniverse.org/commit_id.txt',
-        'zooniverse/pandora' => 'https://translations.zooniverse.org/commit_id.txt',
-        'zooniverse/scribes-of-the-cairo-geniza' => 'https://www.scribesofthecairogeniza.org/commit_id.txt',
-        'zooniverse/talk-api' => 'https://talk.zooniverse.org/commit_id.txt',
-        'zooniverse/zoo-stats-api-graphql' => 'https://graphql-stats.zooniverse.org',
+        'zooniverse/front-end-monorepo' => 'https://fe-project.zooniverse.org/projects',
+        'zooniverse/jobs.zooniverse.org' => 'https://jobs.zooniverse.org',
+        'zooniverse/pandora' => 'https://translations.zooniverse.org',
+        'zooniverse/panoptes-front-end' => 'https://www.zooniverse.org',
+        'zooniverse/pfe-lab' => 'https://lab.zooniverse.org',
+        'zooniverse/scribes-of-the-cairo-geniza' => 'https://www.scribesofthecairogeniza.org',
+        'zooniverse/sugar' => 'https://notifications.zooniverse.org',
+        'zooniverse/talk-api' => 'https://talk.zooniverse.org',
         'zooniverse/zoo-event-stats' => 'https://stats.zooniverse.org/',
-        'zooniverse/jobs.zooniverse.org' => 'https://jobs.zooniverse.org/commit_id.txt'
+        'zooniverse/zoo-stats-api-graphql' => 'https://graphql-stats.zooniverse.org'
       }.freeze
 
       # Repos that do not use heads/master as their primary ref
