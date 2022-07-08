@@ -44,7 +44,8 @@ module Lita
       end
 
       def rebuild_subject_set_search_api(response)
-        build_jenkins_job(response, 'Rebuild subject set search API')
+        response.reply("This cmd no longer works - please visit the Github Actions UI to rebuild the Subject Set Search API")
+        response.reply("https://github.com/zooniverse/subject-set-search-api/actions/workflows/deploy.yml")
       end
 
       def tag_deploy(response)
