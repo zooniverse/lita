@@ -126,12 +126,12 @@ module Lita
         octokit_client.post '/graphql', { query: query }.to_json
       end
 
-      def run_workflow(repo_name, workflow_file_name, ref, options={})
+      def run_workflow(repo_name, workflow_file_name, ref, options = {})
         octokit_client.workflow_dispatch(repo_name, workflow_file_name, ref, options)
       end
 
-      def get_latest_workflow_run(repo_name, workflow_file_name, ref, options={})
-        # defaults to finding the latest manually dispatched workflow action in the queued state
+      def get_latest_workflow_run(repo_name, workflow_file_name, ref, options = {})
+        # defaults to finding the latest manually dispatched workflow action
         # for filtering options see https://docs.github.com/en/rest/actions/workflow-runs#list-workflow-runs-for-a-repository
         default_options = { actor: octokit_client.user.login, branch: ref, event: 'workflow_dispatch', per_page: 1 }
         result = octokit_client.workflow_runs(repo_name, workflow_file_name, default_options.merge(options))
