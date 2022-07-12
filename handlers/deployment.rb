@@ -44,8 +44,11 @@ module Lita
       end
 
       def rebuild_subject_set_search_api(response)
-        response.reply("This cmd no longer works - please visit the Github Actions UI to rebuild the Subject Set Search API")
-        response.reply("https://github.com/zooniverse/subject-set-search-api/actions/workflows/deploy.yml")
+        repo_name = config.github.orgify_repo_name('subject-set-search-api')
+        config.github.run_workflow(repo_name, 'deploy.yml', 'main')
+        workflow_run = config.github.get_latest_workflow_run(repo_name, 'deploy.yml', 'main')
+        response.reply('Subject-Set-Search-API Rebuild initiated:')
+        response.reply("Details at #{workflow_run[:html_url]}")
       end
 
       def tag_deploy(response)
