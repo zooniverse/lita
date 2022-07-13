@@ -46,6 +46,10 @@ module Lita
       def rebuild_subject_set_search_api(response)
         repo_name = config.github.orgify_repo_name('subject-set-search-api')
         config.github.run_workflow(repo_name, 'deploy.yml', 'main')
+        # pause for a period of seconds while the GH API syncs
+        # to ensure we pickup the most recently submited job run
+        gh_api_wait_time = rand(2..4)
+        sleep(gh_api_wait_time)
         workflow_run = config.github.get_latest_workflow_run(repo_name, 'deploy.yml', 'main')
         response.reply('Subject-Set-Search-API Rebuild initiated:')
         response.reply("Details at #{workflow_run[:html_url]}")
