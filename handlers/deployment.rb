@@ -35,7 +35,7 @@ module Lita
       #        and in use for all K8s deployed services
       route(/^(deploy)\s*(.*)/, :tag_deploy, command: true, help: {"deploy REPO" => "Updates the production-release tag on zooniverse/REPO"})
       # custom feature branch deploys for FE Project app - https://github.com/zooniverse/front-end-monorepo/pull/3432
-      route(/^(fem branch deploy)\s*(.*)/, :fem_branch_deploy, command: true, help: {"deploy fem-branch BRANCH" => "Deploys the FEM $branch via gh actions workflow dispatch"})
+      route(/^(fem branch deploy)\s*(.*)/, :fem_branch_deploy, command: true, help: {'fem branch deploy BRANCH' => 'Deploys the specified FEM $BRANCH'})
       route(/^(migrate)\s*(.*)/, :tag_migrate, command: true, help: {"migrate REPO" => "Updates the production-migrate tag on zooniverse/REPO"})
       route(/^(status\s*all)/, :status_all, command: true, help: {'status all' => 'Returns the deployment status for all previously deployed $REPO_NAMES.'})
       route(/^(status|version)\s+(?!all)(.+)/, :status, command: true, help: {'status REPO_NAME' => 'Returns the state of commits not deployed for the $REPO_NAME.'})
