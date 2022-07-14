@@ -34,6 +34,8 @@ module Lita
       # state: the default deploy "chat ops" deploy system
       #        and in use for all K8s deployed services
       route(/^(deploy)\s*(.*)/, :tag_deploy, command: true, help: {"deploy REPO" => "Updates the production-release tag on zooniverse/REPO"})
+      # custom feature branch deploys for FE Project app - https://github.com/zooniverse/front-end-monorepo/pull/3432
+      route(/^(fem branch deploy)\s*(.*)/, :fem_branch_deploy, command: true, help: {"deploy fem-branch BRANCH" => "Deploys the FEM $branch via gh actions workflow dispatch"})
       route(/^(migrate)\s*(.*)/, :tag_migrate, command: true, help: {"migrate REPO" => "Updates the production-migrate tag on zooniverse/REPO"})
       route(/^(status\s*all)/, :status_all, command: true, help: {'status all' => 'Returns the deployment status for all previously deployed $REPO_NAMES.'})
       route(/^(status|version)\s+(?!all)(.+)/, :status, command: true, help: {'status REPO_NAME' => 'Returns the state of commits not deployed for the $REPO_NAME.'})
@@ -104,6 +106,19 @@ module Lita
         last_deployed_commits.map { |commit_id| commit_url_format(repo_name, commit_id) }
         output = "Last Deployed Commits (most recent is higher):\n#{last_deployed_commits.join("\n")}"
         response.reply(output)
+      end
+
+      def fem_branch_deploy(response)
+        branch_name = repo_name_without_whitespace(response.matches[0][1])
+        repo_name = config.github.orgify_repo_name('front-end-monorepo')
+        config.github.run_workflow(repo_name, 'deploy_branch.yml', branch_name)
+        # pause for a period of seconds while the GH API syncs
+        # to ensure we pickup the most recently submited job run
+        gh_api_wait_time = rand(2..4)
+        sleep(gh_api_wait_time)
+        workflow_run = config.github.get_latest_workflow_run(repo_name, 'deploy_branch.yml', branch_name)
+        response.reply("FE Project app branch (#{branch_name}) deploy initiated:")
+        response.reply("Details at #{workflow_run[:html_url]}")
       end
 
       private
