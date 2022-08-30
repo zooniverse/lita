@@ -18,6 +18,7 @@ jobs:
   deploy_app:
     name: Deploy Lita
     runs-on: ubuntu-latest
+    needs: build_and_push_image
     steps:
     - name: Checkout
       uses: actions/checkout@v2
@@ -32,7 +33,7 @@ jobs:
     - name: Set the target AKS cluster
       uses: Azure/aks-set-context@v1
       with:
-        creds: '${{ secrets.creds }}'
+        creds: '${{ secrets.AZURE_AKS }}'
         cluster-name: microservices
         resource-group: kubernetes
 
@@ -44,7 +45,7 @@ jobs:
   deploy_slack_notification:
     name: Slack notification
     uses: zooniverse/ci-cd/.github/workflows/slack_notification.yaml@main
-    needs: deploy_app
+    needs: [build_and_push_image, deploy_app]
     if: always()
     with:
       commit_id: ${{ github.sha }}
