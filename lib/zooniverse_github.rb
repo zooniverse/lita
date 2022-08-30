@@ -19,6 +19,7 @@ module Lita
 
       # ensure these are all downcased for easy matching
       IRREGULAR_DOWNCASED_ORG_URLS = {
+        'zooniverse/anti-slavery-manuscripts' => 'https://www.antislaverymanuscripts.org',
         'zooniverse/front-end-monorepo' => 'https://fe-project.zooniverse.org/projects',
         'zooniverse/jobs.zooniverse.org' => 'https://jobs.zooniverse.org',
         'zooniverse/pandora' => 'https://translations.zooniverse.org',
