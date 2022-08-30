@@ -1,0 +1,56 @@
+name: Deploy Lita
+
+on:
+  push:
+    branches:
+      - master
+  workflow_dispatch:
+
+jobs:
+  build_and_push_image:
+    name: Build and Push Image
+    uses: zooniverse/ci-cd/.github/workflows/build_and_push_image.yaml@main
+    with:
+      repo_name: lita
+      commit_id: ${{ github.sha }}
+      latest: true
+
+  deploy_app:
+    name: Deploy Lita
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+
+    - name: Login to GitHub Container Registry
+      uses: docker/login-action@v1
+      with:
+        registry: ghcr.io
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Set the target AKS cluster
+      uses: Azure/aks-set-context@v1
+      with:
+        creds: '${{ secrets.creds }}'
+        cluster-name: microservices
+        resource-group: kubernetes
+
+    - name: Modify & apply template
+      run: |
+        sed "s/__IMAGE_TAG__/${{ github.sha }}/g" ./kubernetes/deployment.tmpl \
+          | kubectl apply -f -
+
+  deploy_slack_notification:
+    name: Slack notification
+    uses: zooniverse/ci-cd/.github/workflows/slack_notification.yaml@main
+    needs: deploy_app
+    if: always()
+    with:
+      commit_id: ${{ github.sha }}
+      job_name: Deploy Lita
+      status: ${{ needs.deploy_app.result }}
+      title: "Lita deploy complete"
+      title_link: "https://github.com/zooniverse/lita"
+    secrets:
+      slack_webhook_url: ${{ secrets.SLACK_WEBHOOK_URL }}
