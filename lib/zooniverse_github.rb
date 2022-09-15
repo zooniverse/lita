@@ -22,6 +22,7 @@ module Lita
         'zooniverse/anti-slavery-manuscripts' => 'https://www.antislaverymanuscripts.org',
         'zooniverse/front-end-monorepo' => 'https://fe-project.zooniverse.org/projects',
         'zooniverse/jobs.zooniverse.org' => 'https://jobs.zooniverse.org',
+        'zooniverse/notes-from-nature-field-book' => 'https://field-book.notesfromnature.org/',
         'zooniverse/pandora' => 'https://translations.zooniverse.org',
         'zooniverse/panoptes-front-end' => 'https://www.zooniverse.org',
         'zooniverse/pfe-lab' => 'https://lab.zooniverse.org',
