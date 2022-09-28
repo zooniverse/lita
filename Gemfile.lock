@@ -1,7 +1,7 @@
 GIT
   remote: https://github.com/yuenmichelle1/lita-slack.git
-  revision: 7017dd11431ed7681bd4944a95290a65c021617c
-  ref: 7017dd1
+  revision: 7b648432639e752fcb8d27929707a325238cd509
+  ref: 7b64843
   branch: test-new-connection
   specs:
     lita-slack (1.8.0)
