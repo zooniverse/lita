@@ -2,7 +2,10 @@ FROM ruby:2.7-slim
 WORKDIR /app
 
 RUN apt-get update && \
-  apt-get install --no-install-recommends -y build-essential && \
+  apt-get install --no-install-recommends -y \ 
+  build-essential \
+  git \
+  && \
   apt-get clean && rm -rf /var/lib/apt/lists/*
 
 ARG LITA_ENV=production
