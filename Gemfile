@@ -3,7 +3,7 @@ source "https://rubygems.org"
 gem "lita"
 
 group :production do
-  gem 'lita-slack', git: 'https://github.com/yuenmichelle1/lita-slack.git', branch: 'test-new-connection', ref: '7b64843'
+  gem 'lita-slack', git: 'https://github.com/yuenmichelle1/lita-slack.git', branch: 'connection-using-rtm-connect', ref: 'e3e49f5'
 end
 
 gem "lita-karma"
