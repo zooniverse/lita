@@ -1,8 +1,8 @@
 GIT
-  remote: https://github.com/yuenmichelle1/lita-slack.git
-  revision: e3e49f50cea2ea42c1a46679d9923f97481731b5
-  ref: e3e49f5
-  branch: connection-using-rtm-connect
+  remote: https://github.com/zooniverse/lita-slack.git
+  revision: 768ccc5c7e4f08803a233aa98dcc100d8fb1c538
+  ref: 768ccc5
+  branch: lita-version
   specs:
     lita-slack (1.8.0)
       eventmachine
