@@ -2,9 +2,9 @@ source "https://rubygems.org"
 
 gem "lita"
 
-# group :production do
-# end
-gem 'lita-slack', git: 'https://github.com/yuenmichelle1/lita-slack.git', branch: 'test-new-connection', ref: '7017dd1'
+group :production do
+  gem 'lita-slack', git: 'https://github.com/yuenmichelle1/lita-slack.git', branch: 'test-new-connection', ref: '7b64843'
+end
 
 gem "lita-karma"
 gem "lita-lunch"
