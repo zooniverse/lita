@@ -7,8 +7,7 @@ module Lita
     class SecurityReporter < Handler
       config :github, default: Zooniverse::Github.new
 
-      route(/^(security report)\s*(.*)/, :get_dependabot_issues, command: true,
-                                                                 help: { 'status dependabot' => 'displays dependabot security alerts' })
+      route(/^(security report)\s*(.*)/, :get_dependabot_issues, command: true, help: { 'security report(s) (this week)' => 'displays dependabot security alerts' })
 
       def get_dependabot_issues(response)
         filter = filter_without_whitespace(response.matches[0][1])
