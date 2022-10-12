@@ -34,8 +34,7 @@ module Lita
 
             repo_name = node['name']
 
-            @repos_to_skip ||= %w[next-cookie-auth-panoptes science-gossip-data seven-ten
-                                  Seven-Ten-Client Social Sellers Exercise CSA-Home].map(&:downcase)
+            @repos_to_skip ||= %w[science-gossip-data Sellers Exercise CSA-Home].map(&:downcase)
 
             next if @repos_to_skip.include? repo_name.downcase
 
