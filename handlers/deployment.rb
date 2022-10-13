@@ -25,6 +25,7 @@ module Lita
         command: true,
         help: { 'rebuild subject-set-search API' => 'Rebuild subject-set-search API with new data' }
       )
+      route(/^apply ingresses/, :apply_ingresses, command: true, help: {"apply ingresses" => "Applies the ingress templates in the static repo"})
 
       # New K8s deployment template
       # updates the production release tag on the supplied repo (\s*.(*))
@@ -33,8 +34,10 @@ module Lita
       # state: the default deploy "chat ops" deploy system
       #        and in use for all K8s deployed services
       route(/^(deploy)\s*(.*)/, :tag_deploy, command: true, help: {"deploy REPO" => "Updates the production-release tag on zooniverse/REPO"})
+      # custom feature branch deploys for FE Project app - https://github.com/zooniverse/front-end-monorepo/pull/3432
+      route(/^(fem branch deploy)\s*(.*)/, :fem_branch_deploy, command: true, help: {'fem branch deploy BRANCH' => 'Deploys the specified FEM $BRANCH'})
       route(/^(migrate)\s*(.*)/, :tag_migrate, command: true, help: {"migrate REPO" => "Updates the production-migrate tag on zooniverse/REPO"})
-      route(/^(status\s*all)/, :status_all, command: true, help: {'staus all' => 'Returns the deployment status for all previously deployed $REPO_NAMES.'})
+      route(/^(status\s*all)/, :status_all, command: true, help: {'status all' => 'Returns the deployment status for all previously deployed $REPO_NAMES.'})
       route(/^(status|version)\s+(?!all)(.+)/, :status, command: true, help: {'status REPO_NAME' => 'Returns the state of commits not deployed for the $REPO_NAME.'})
       route(/^(history)\s(.+)/, :commit_history, command: true, help: {'history REPO_NAME' => 'Returns the last deployed commit history (max 10) .'})
 
@@ -43,7 +46,15 @@ module Lita
       end
 
       def rebuild_subject_set_search_api(response)
-        build_jenkins_job(response, 'Rebuild subject set search API')
+        repo_name = config.github.orgify_repo_name('subject-set-search-api')
+        config.github.run_workflow(repo_name, 'deploy.yml', 'main')
+        # pause for a period of seconds while the GH API syncs
+        # to ensure we pickup the most recently submited job run
+        gh_api_wait_time = rand(2..4)
+        sleep(gh_api_wait_time)
+        workflow_run = config.github.get_latest_workflow_run(repo_name, 'deploy.yml', 'main')
+        response.reply('Subject-Set-Search-API Rebuild initiated:')
+        response.reply("Details at #{workflow_run[:html_url]}")
       end
 
       def tag_deploy(response)
@@ -69,6 +80,11 @@ module Lita
         response.reply("Deployment tag '#{tag}' was successfully updated for #{repo_name}.")
       end
 
+      def apply_ingresses(response)
+        config.github.update_production_ingresses_tag
+        response.reply("Ingress tag was successfully updated for static.")
+      end
+
       def status(response)
         repo_name = repo_name_without_whitespace(response.matches[0][1])
         response.reply(status_response(repo_name))
@@ -90,6 +106,19 @@ module Lita
         last_deployed_commits.map { |commit_id| commit_url_format(repo_name, commit_id) }
         output = "Last Deployed Commits (most recent is higher):\n#{last_deployed_commits.join("\n")}"
         response.reply(output)
+      end
+
+      def fem_branch_deploy(response)
+        branch_name = repo_name_without_whitespace(response.matches[0][1])
+        repo_name = config.github.orgify_repo_name('front-end-monorepo')
+        config.github.run_workflow(repo_name, 'deploy_branch.yml', branch_name)
+        # pause for a period of seconds while the GH API syncs
+        # to ensure we pickup the most recently submited job run
+        gh_api_wait_time = rand(2..4)
+        sleep(gh_api_wait_time)
+        workflow_run = config.github.get_latest_workflow_run(repo_name, 'deploy_branch.yml', branch_name)
+        response.reply("FE Project app branch (#{branch_name}) deploy initiated:")
+        response.reply("Details at #{workflow_run[:html_url]}")
       end
 
       private

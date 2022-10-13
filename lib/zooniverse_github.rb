@@ -17,19 +17,26 @@ module Lita
 
       class RefAlreadyDeployed < StandardError; end
 
-      IRREGULAR_ORG_URLS = {
-        'zooniverse/front-end-monorepo' => 'https://fe-project.zooniverse.org/projects/commit_id.txt',
-        'zooniverse/pfe-lab' => 'https://lab.zooniverse.org/commit_id.txt',
-        'zooniverse/Panoptes-Front-End' => 'https://www.zooniverse.org/commit_id.txt',
-        'zooniverse/pandora' => 'https://translations.zooniverse.org/commit_id.txt',
-        'zooniverse/talk-api' => 'https://talk.zooniverse.org/commit_id.txt',
-        'zooniverse/zoo-stats-api-graphql' => 'https://graphql-stats.zooniverse.org',
+      # ensure these are all downcased for easy matching
+      IRREGULAR_DOWNCASED_ORG_URLS = {
+        'zooniverse/aggregation-for-caesar' => 'https://aggregation-caesar.zooniverse.org/',
+        'zooniverse/anti-slavery-manuscripts' => 'https://www.antislaverymanuscripts.org',
+        'zooniverse/front-end-monorepo' => 'https://fe-project.zooniverse.org/projects',
+        'zooniverse/jobs.zooniverse.org' => 'https://jobs.zooniverse.org',
+        'zooniverse/notes-from-nature-field-book' => 'https://field-book.notesfromnature.org',
+        'zooniverse/pandora' => 'https://translations.zooniverse.org',
+        'zooniverse/panoptes-front-end' => 'https://www.zooniverse.org',
+        'zooniverse/pfe-lab' => 'https://lab.zooniverse.org',
+        'zooniverse/scribes-of-the-cairo-geniza' => 'https://www.scribesofthecairogeniza.org',
+        'zooniverse/sugar' => 'https://notifications.zooniverse.org',
+        'zooniverse/talk-api' => 'https://talk.zooniverse.org',
         'zooniverse/zoo-event-stats' => 'https://stats.zooniverse.org/',
-        'zooniverse/aggregation-for-caesar' => 'https://aggregation-caesar.zooniverse.org/'
+        'zooniverse/zoo-stats-api-graphql' => 'https://graphql-stats.zooniverse.org'       
       }.freeze
 
       # Repos that do not use heads/master as their primary ref
       PRIMARY_REF_BY_REPO = {
+        'zooniverse/pandora' => 'heads/main'
       }.freeze
 
       JSON_COMMIT_ID_KEYS = %w[revision commit_id].freeze
@@ -113,10 +120,26 @@ module Lita
         update_tag(full_repo_name, deploy_ref)
       end
 
+      def update_production_ingresses_tag
+        update_tag('zooniverse/static', 'tags/production-ingresses')
+      end
+
       def get_dependabot_issues(last_repo_listed)
         query = last_repo_listed ? query_with_after(last_repo_listed) : query_without_after
 
         octokit_client.post '/graphql', { query: query }.to_json
+      end
+
+      def run_workflow(repo_name, workflow_file_name, ref, options = {})
+        octokit_client.workflow_dispatch(repo_name, workflow_file_name, ref, options)
+      end
+
+      def get_latest_workflow_run(repo_name, workflow_file_name, ref, options = {})
+        # defaults to finding the latest manually dispatched workflow action
+        # for filtering options see https://docs.github.com/en/rest/actions/workflow-runs#list-workflow-runs-for-a-repository
+        default_options = { actor: octokit_client.user.login, branch: ref, event: 'workflow_dispatch', per_page: 1 }
+        result = octokit_client.workflow_runs(repo_name, workflow_file_name, default_options.merge(options))
+        result[:workflow_runs]&.first
       end
 
       private
@@ -144,6 +167,7 @@ module Lita
                     }
                     dismissedAt
                     fixedAt
+                    createdAt
                   }
                 }
               }
@@ -176,6 +200,7 @@ module Lita
                     }
                     dismissedAt
                     fixedAt
+                    createdAt
                   }
                 }
               }
@@ -241,7 +266,7 @@ module Lita
       end
 
       def repo_type_and_url(repo_name)
-        url = IRREGULAR_ORG_URLS[repo_name]
+        url = IRREGULAR_DOWNCASED_ORG_URLS[repo_name.downcase]
         if url
           url
         else
