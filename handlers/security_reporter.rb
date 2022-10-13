@@ -8,6 +8,14 @@ module Lita
       config :github, default: Zooniverse::Github.new
 
       route(/^(security report)\s*(.*)/, :get_dependabot_issues, command: true, help: { 'security report(s) (this week)' => 'displays dependabot security alerts' })
+      route(/^(code scan report)\s*(.*)/, :get_code_scanned_issues, command: true, help: {'code scan report(s)' => 'displays dependabot code scanning alerts' })
+
+      def get_code_scanned_issues(response)
+        res = config.github.code_scanned_issues
+        puts "MDY114"
+        puts res
+        response.reply("HELLOOOO code scan result #{res}")
+      end
 
       def get_dependabot_issues(response)
         filter = filter_without_whitespace(response.matches[0][1])
