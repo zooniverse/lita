@@ -19,6 +19,7 @@ module Lita
 
       # ensure these are all downcased for easy matching
       IRREGULAR_DOWNCASED_ORG_URLS = {
+        'zooniverse/aggregation-for-caesar' => 'https://aggregation-caesar.zooniverse.org/',
         'zooniverse/anti-slavery-manuscripts' => 'https://www.antislaverymanuscripts.org',
         'zooniverse/front-end-monorepo' => 'https://fe-project.zooniverse.org/projects',
         'zooniverse/jobs.zooniverse.org' => 'https://jobs.zooniverse.org',
@@ -30,7 +31,7 @@ module Lita
         'zooniverse/sugar' => 'https://notifications.zooniverse.org',
         'zooniverse/talk-api' => 'https://talk.zooniverse.org',
         'zooniverse/zoo-event-stats' => 'https://stats.zooniverse.org/',
-        'zooniverse/zoo-stats-api-graphql' => 'https://graphql-stats.zooniverse.org'
+        'zooniverse/zoo-stats-api-graphql' => 'https://graphql-stats.zooniverse.org'       
       }.freeze
 
       # Repos that do not use heads/master as their primary ref
@@ -40,7 +41,8 @@ module Lita
 
       JSON_COMMIT_ID_KEYS = %w[revision commit_id].freeze
       DEPLOYED_BRANCH_REPOS = {
-        'zooniverse/zoo-stats-api-graphql' => 'master'
+        'zooniverse/zoo-stats-api-graphql' => 'master',
+        'zooniverse/aggregation-for-caesar' => 'master'
       }.freeze
       GH_PREVIEW_API_HEADERS = {
         'Accept': 'application/vnd.github.groot-preview+json',
