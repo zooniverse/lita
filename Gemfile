@@ -19,7 +19,6 @@ gem "lita-cron"
 
 gem "httparty"
 gem "octokit"
-gem "jenkins_api_client"
 gem "a_vs_an"
 
 gem 'dotenv'

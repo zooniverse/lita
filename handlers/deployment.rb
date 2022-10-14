@@ -2,7 +2,6 @@
 
 require 'httparty'
 require 'octokit'
-require 'jenkins_api_client'
 require 'uri'
 require_relative '../lib/zooniverse_github'
 
@@ -12,13 +11,8 @@ module Lita
 
       DEPLOY_REPOS_SET_NAME = 'deploy-repos'
 
-      config :jenkins_url, default: 'https://jenkins.zooniverse.org'
-      config :jenkins_username, required: Lita.required_config?
-      config :jenkins_password, required: Lita.required_config?
       config :github, default: Zooniverse::Github.new
 
-      # Jenkins jobs to help with OPS work
-      route(/^clear static cache/, :clear_static_cache, command: true, help: {"clear static cache" => "Clears the static cache (duh)"})
       route(
         /^rebuild subject[\s-]set[\s-]search API/i,
         :rebuild_subject_set_search_api,
@@ -29,7 +23,7 @@ module Lita
 
       # New K8s deployment template
       # updates the production release tag on the supplied repo (\s*.(*))
-      # which in turn triggers a jenkinsfile job to build / deploy the service
+      # which in turn triggers a github action jo to build / deploy the service
       #
       # state: the default deploy "chat ops" deploy system
       #        and in use for all K8s deployed services
@@ -41,9 +35,6 @@ module Lita
       route(/^(status|version)\s+(?!all)(.+)/, :status, command: true, help: {'status REPO_NAME' => 'Returns the state of commits not deployed for the $REPO_NAME.'})
       route(/^(history)\s(.+)/, :commit_history, command: true, help: {'history REPO_NAME' => 'Returns the last deployed commit history (max 10) .'})
 
-      def clear_static_cache(response)
-        build_jenkins_job(response, "Clear static cache")
-      end
 
       def rebuild_subject_set_search_api(response)
         repo_name = config.github.orgify_repo_name('subject-set-search-api')
@@ -126,31 +117,6 @@ module Lita
       # ensure no leading/trailing whitespaces etc in the name
       def repo_name_without_whitespace(repo_name)
         repo_name.strip
-      end
-
-      def build_jenkins_job(response, job_name, params={})
-        response.reply("#{job_name} starting... hang on while I get you a build number (might take up to 60 seconds).")
-
-        build_number = jenkins.job.build(job_name, params, {'build_start_timeout' => ENV.fetch('JENKINS_JOB_TIMEOUT', 90).to_i, 'cancel_on_build_start_timeout' => true})
-        response.reply("#{job_name} #{build_number} started. Console output: #{config.jenkins_url}/job/#{URI.escape(job_name)}/#{build_number}/console")
-
-        every(10) do |timer|
-          details = jenkins.job.get_build_details(job_name, build_number)
-          if !details["building"]
-            response.reply("#{job_name} #{build_number} finished: #{details["result"]}")
-            timer.stop
-          end
-        end
-      rescue Timeout::Error
-        response.reply("#{job_name} couldn't be started.")
-      end
-
-      def jenkins
-        raise unless config.jenkins_password
-        @jenkins ||= JenkinsApi::Client.new(server_url: config.jenkins_url,
-                                            username: config.jenkins_username,
-                                            password: config.jenkins_password,
-                                            ssl: true)
       end
 
       def status_response(repo_name)
