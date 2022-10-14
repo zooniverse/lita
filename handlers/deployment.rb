@@ -23,7 +23,7 @@ module Lita
 
       # New K8s deployment template
       # updates the production release tag on the supplied repo (\s*.(*))
-      # which in turn triggers a github action jo to build / deploy the service
+      # which in turn triggers a github action job to build / deploy the service
       #
       # state: the default deploy "chat ops" deploy system
       #        and in use for all K8s deployed services
