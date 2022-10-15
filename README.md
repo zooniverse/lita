@@ -25,7 +25,7 @@ Alternatively get a console to interactively run code / debug tests
 3. `lita start` to get a lita shell, where you can use lita commands from the shell for testing, e.g. `lita project galaxy` to run the `lita-zooniverse-projects` plugin.
 
 Note: some handlers will not work unless they have the relevant configuration directives supplied as ENV vars,
-E.g. deployments that talk to Jenkins and locating Lintott via Foursquare, add the relevant ENV vars to your local dev env to test these specific handlers.
+E.g. locating Lintott via Foursquare, add the relevant ENV vars to your local dev env to test these specific handlers.
 
 ## Production
 Set the LITA_ENV variable to run in production mode on start `LITA_ENV=production lita start`.
@@ -34,4 +34,4 @@ Note: If running in production mode then slack gem needs an token env var token 
 
 ## Deployment
 
-Deployed automatically via [Jenkinsfile](./Jenkinsfile)
+Deployed automatically via [GitHub Actions](./github/workflows/deploy_lita.yml)
