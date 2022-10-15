@@ -5,16 +5,41 @@ require 'httparty'
 module Lita
   module Handlers
     class SecurityReporter < Handler
+      HIGHEST_PRIORITY_REPOS = %w[front-end-monorepo Panoptes-Front-End panoptes caesar designator talk-api zoo-event-stats zoo-stats-api-graphql].map(&:downcase)
+
       config :github, default: Zooniverse::Github.new
 
       route(/^(security report)\s*(.*)/, :get_dependabot_issues, command: true, help: { 'security report(s) (this week)' => 'displays dependabot security alerts' })
-      route(/^(code scan report)\s*(.*)/, :get_code_scanned_issues, command: true, help: {'code scan report(s)' => 'displays dependabot code scanning alerts' })
+      route(/^(code scan report)\s*(.*)/, :get_code_scanned_issues_of_high_priority_repos, command: true, help: {'code scan report(s)' => 'displays dependabot code scanning alerts for highest priority repos' })
 
-      def get_code_scanned_issues(response)
-        res = config.github.code_scanned_issues
-        puts "MDY114"
-        puts res
-        response.reply("HELLOOOO code scan result #{res}")
+      def get_code_scanned_issues_of_high_priority_repos(response)
+        repo_to_alert_count = {}
+        repo_to_alert_count.default = 0
+        repo_to_high_alert_count = {}
+        repo_to_high_alert_count.default = 0
+        repo_to_critical_alert_count = {}
+        repo_to_critical_alert_count.default = 0
+        HIGHEST_PRIORITY_REPOS.each do |repo_name|
+          code_scanned_alerts = config.github.code_scanned_issues_per_repo(repo_name)
+          repo_to_alert_count[repo_name] = code_scanned_alerts.length
+          code_scanned_alerts.each do |alert|
+            severity = alert['rule']['security_severity_level'].downcase
+            add_alert_count(repo_to_high_alert_count, repo_name) if severity == 'high'
+            add_alert_count(repo_to_critical_alert_count, repo_name) if severity == 'critical'
+          end
+        rescue Octokit::Error
+          next
+        end
+        summary = "*#{total_alert_count(repo_to_alert_count)} Code Scanning Alerts Total(#{total_alert_count(repo_to_high_alert_count)} HIGH;#{total_alert_count(repo_to_critical_alert_count)} CRITICAL)*"
+        summary += "\n"
+
+        HIGHEST_PRIORITY_REPOS.each do |repo|
+          next if repo_to_alert_count[repo].zero?
+
+          summary += "<https://github.com/zooniverse/#{repo}/security/code-scanning|#{repo}> -- #{repo_to_alert_count[repo]} (#{repo_to_high_alert_count[repo]} HIGH; #{repo_to_critical_alert_count[repo]} CRITICAL)"
+          summary += "\n"
+        end
+        response.reply(summary)
       end
 
       def get_dependabot_issues(response)

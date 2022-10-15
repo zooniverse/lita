@@ -130,11 +130,8 @@ module Lita
         octokit_client.post '/graphql', { query: query }.to_json
       end
 
-      def code_scanned_issues
-        octokit_client.get '/orgs/zooniverse/code-scanning/alerts'
-      rescue Octokit::Error => error
-        puts "MDY114 ERROR"
-        puts error
+      def code_scanned_issues_per_repo(repo)
+        octokit_client.get("/repos/zooniverse/#{repo}/code-scanning/alerts", { state: 'open' })
       end
 
       def run_workflow(repo_name, workflow_file_name, ref, options = {})
