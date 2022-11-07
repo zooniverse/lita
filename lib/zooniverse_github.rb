@@ -36,7 +36,8 @@ module Lita
 
       # Repos that do not use heads/master as their primary ref
       PRIMARY_REF_BY_REPO = {
-        'zooniverse/pandora' => 'heads/main'
+        'zooniverse/pandora' => 'heads/main',
+        'zooniverse/kade' => 'heads/main'
       }.freeze
 
       JSON_COMMIT_ID_KEYS = %w[revision commit_id].freeze
