@@ -7,8 +7,10 @@ module Lita
     class SecurityReporter < Handler
       config :github, default: Zooniverse::Github.new
 
-      route(/^(security report)\s*(.*)/, :dependabot_issues, command: true, help: { 'security report(s) (this week)' => 'displays dependabot security alerts' })
-      route(/^(code scan report)\s*(.*)/, :code_scanned_issues, command: true, help: {'code scan report(s)' => 'displays dependabot code scanning alerts for highest priority repos' })
+      route(/^(security report)\s*(.*)/, :dependabot_issues, command: true,
+                                                             help: { 'security report(s) (this week)' => 'displays dependabot security alerts' })
+      route(/^(code scan report)\s*(.*)/, :code_scanned_issues, command: true,
+                                                                help: { 'code scan report(s)' => 'displays dependabot code scanning alerts' })
 
       def code_scanned_issues(response)
         repo_to_alert_count = {}
@@ -19,22 +21,20 @@ module Lita
         repo_to_critical_alert_count.default = 0
 
         code_scanned_alerts = config.github.code_scanned_issues
-   
+
         code_scanned_alerts.each do |alert|
           repo_name = alert.repository.name
-          repo_to_alert_count[repo_name] = repo_to_alert_count[repo_name] + 1
-          puts repo_to_alert_count
+          add_alert_count(repo_to_alert_count, repo_name)
           severity = alert.rule.severity
-          add_alert_count(repo_to_high_alert_count, repo_name) if severity == 'warning' || severity == 'high'
+          add_alert_count(repo_to_high_alert_count, repo_name) if %w[warning high].include?(severity)
           add_alert_count(repo_to_critical_alert_count, repo_name) if severity == 'critical'
         end
-      
+
         summary = "*#{total_alert_count(repo_to_alert_count)} Code Scanning Alerts Total(#{total_alert_count(repo_to_high_alert_count)} HIGH;#{total_alert_count(repo_to_critical_alert_count)} CRITICAL)*"
         summary += "\n"
-        
 
         response.reply("#{summary}: \n #{format_code_scan_alerts(repo_to_alert_count, repo_to_high_alert_count,
-        repo_to_critical_alert_count)}")
+                                                                 repo_to_critical_alert_count)}")
       end
 
       def format_code_scan_alerts(repo_to_alert_count, repo_to_high_alert_count, repo_to_critical_alert_count)
@@ -75,7 +75,8 @@ module Lita
             if filter.downcase.include? 'this week'
               categorize_alerts_by_severity_filter_for_this_week(
                 node_alerts, repo_to_alert_count, repo_name,
-                repo_to_high_alert_count, repo_to_critical_alert_count, repo_to_reported_packages)
+                repo_to_high_alert_count, repo_to_critical_alert_count, repo_to_reported_packages
+              )
             else
               categorize_alerts_by_severity(node_alerts, repo_to_alert_count, repo_name,
                                             repo_to_high_alert_count, repo_to_critical_alert_count,
