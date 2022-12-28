@@ -58,12 +58,6 @@ module Lita
         response.reply("#{summary}: \n #{format_code_scan_report(code_scan_report)}")
       end
 
-      def format_code_scan_report(code_scan_report)
-        code_scan_report.map do |repo, alert_counter|
-          "<https://github.com/zooniverse/#{repo}/security/code-scanning|#{repo}> -- #{repo} (#{alert_counter.high_alerts_count} HIGH; #{alert_counter.critical_alerts_count} CRITICAL) #{alert_counter.alerts_count} flagged scans"
-        end.join("\n")
-      end
-
       def dependabot_issues(response)
         filter = filter_without_whitespace(response.matches[0][1])
         get_issues = true
@@ -115,6 +109,12 @@ module Lita
       end
 
       private
+
+      def format_code_scan_report(code_scan_report)
+        code_scan_report.map do |repo, alert_counter|
+          "<https://github.com/zooniverse/#{repo}/security/code-scanning|#{repo}> -- #{repo} (#{alert_counter.high_alerts_count} HIGH; #{alert_counter.critical_alerts_count} CRITICAL) #{alert_counter.alerts_count} flagged scans"
+        end.join("\n")
+      end
 
       def filter_without_whitespace(filter)
         filter.strip
