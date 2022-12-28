@@ -11,35 +11,56 @@ module Lita
                                                              help: { 'security report(s) (this week)' => 'displays dependabot security alerts' })
       route(/^(code scan report)\s*(.*)/, :code_scanned_issues, command: true,
                                                                 help: { 'code scan report(s)' => 'displays dependabot code scanning alerts' })
+      class CodeScanAlertCounter
+        attr_reader :alerts_count, :critical_alerts_count, :high_alerts_count
+
+        def initialize
+          @alerts_count = 0
+          @critical_alerts_count = 0
+          @high_alerts_count = 0
+        end
+
+        def add_to_alert_count
+          @alerts_count += 1
+        end
+
+        def add_to_critical_alerts_count
+          @critical_alerts_count += 1
+        end
+
+        def add_to_high_alerts_count
+          @high_alerts_count += 1
+        end
+      end
 
       def code_scanned_issues(response)
-        repo_to_alert_count = {}
-        repo_to_alert_count.default = 0
-        repo_to_high_alert_count = {}
-        repo_to_high_alert_count.default = 0
-        repo_to_critical_alert_count = {}
-        repo_to_critical_alert_count.default = 0
+        code_scan_report = {}
 
         code_scanned_alerts = config.github.code_scanned_issues
 
         code_scanned_alerts.each do |alert|
           repo_name = alert.repository.name
-          add_alert_count(repo_to_alert_count, repo_name)
           severity = alert.rule.severity
-          add_alert_count(repo_to_high_alert_count, repo_name) if %w[warning high].include?(severity)
-          add_alert_count(repo_to_critical_alert_count, repo_name) if severity == 'critical'
+          alert_counter = code_scan_report[repo_name] || CodeScanAlertCounter.new
+          alert_counter.add_to_alert_count
+          alert_counter.add_to_high_alerts_count if %w[warning high].include?(severity)
+          alert_counter.add_to_critical_alerts_count if severity == 'critical'
+
+          code_scan_report[repo_name] = alert_counter
         end
 
-        summary = "*#{total_alert_count(repo_to_alert_count)} Code Scanning Alerts Total(#{total_alert_count(repo_to_high_alert_count)} HIGH;#{total_alert_count(repo_to_critical_alert_count)} CRITICAL)*"
-        summary += "\n"
+        total_alerts_count = code_scan_report.values.collect(&:alerts_count).sum
+        total_high_alerts_count = code_scan_report.values.collect(&:high_alerts_count).sum
+        total_critical_alerts_count = code_scan_report.values.collect(&:critical_alerts_count).sum
 
-        response.reply("#{summary}: \n #{format_code_scan_alerts(repo_to_alert_count, repo_to_high_alert_count,
-                                                                 repo_to_critical_alert_count)}")
+        summary = "*#{total_alerts_count} Code Scanning Alerts Total(#{total_high_alerts_count} HIGH;#{total_critical_alerts_count} CRITICAL)*"
+
+        response.reply("#{summary}: \n #{format_code_scan_report(code_scan_report)}")
       end
 
-      def format_code_scan_alerts(repo_to_alert_count, repo_to_high_alert_count, repo_to_critical_alert_count)
-        repo_to_alert_count.map do |repo, count|
-          "<https://github.com/zooniverse/#{repo}/security/code-scanning|#{repo}> -- #{count} (#{repo_to_high_alert_count[repo]} HIGH; #{repo_to_critical_alert_count[repo]} CRITICAL) #{repo_to_alert_count[repo]} flagged scans"
+      def format_code_scan_report(code_scan_report)
+        code_scan_report.map do |repo, alert_counter|
+          "<https://github.com/zooniverse/#{repo}/security/code-scanning|#{repo}> -- #{repo} (#{alert_counter.high_alerts_count} HIGH; #{alert_counter.critical_alerts_count} CRITICAL) #{alert_counter.alerts_count} flagged scans"
         end.join("\n")
       end
 
