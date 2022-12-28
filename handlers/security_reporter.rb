@@ -110,9 +110,8 @@ module Lita
         total_high_alerts_count = dependabot_issues_report.values.collect(&:high_alerts_count).sum
         total_critical_alerts_count = dependabot_issues_report.values.collect(&:critical_alerts_count).sum
 
-
         summary = "*#{total_alerts_count} Alerts Total (#{total_high_alerts_count} HIGH; #{total_critical_alerts_count} CRITICAL)*"
-        response.reply("#{summary}: \n#{format_alerts(dependabot_issues_report)}")
+        response.reply("#{summary}: \n#{format_dependabot_issues_report(dependabot_issues_report)}")
       end
 
       private
@@ -125,10 +124,6 @@ module Lita
 
       def filter_without_whitespace(filter)
         filter.strip
-      end
-
-      def total_alert_count(repo_to_alert_count)
-        repo_to_alert_count.reduce(0) { |sum, (_, count)| sum + count }
       end
 
       def categorize_alerts_by_severity_filter_for_this_week(node_alerts, dependabot_issues_report, repo_name)
@@ -167,7 +162,7 @@ module Lita
         end
       end
 
-      def format_alerts(dependabot_issues_report)
+      def format_dependabot_issues_report(dependabot_issues_report)
         dependabot_issues_report.map do |repo, counter|
           "<https://github.com/zooniverse/#{repo}/security/dependabot|#{repo}> -- #{counter.alerts_count} (#{counter.high_alerts_count} HIGH; #{counter.critical_alerts_count} CRITICAL) #{counter.reported_packages.size} flagged packages"
         end.join("\n")
