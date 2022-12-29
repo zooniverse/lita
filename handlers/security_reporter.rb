@@ -7,9 +7,58 @@ module Lita
     class SecurityReporter < Handler
       config :github, default: Zooniverse::Github.new
 
-      route(/^(security report)\s*(.*)/, :get_dependabot_issues, command: true, help: { 'security report(s) (this week)' => 'displays dependabot security alerts' })
+      route(/^(security report)\s*(.*)/, :dependabot_issues, command: true,
+                                                             help: { 'security report(s) (this week)' => 'displays dependabot security alerts' })
+      route(/^(code scan report)\s*(.*)/, :code_scanned_issues, command: true,
+                                                                help: { 'code scan report(s)' => 'displays dependabot code scanning alerts' })
+      class CodeScanAlertCounter
+        attr_reader :alerts_count, :critical_alerts_count, :high_alerts_count
 
-      def get_dependabot_issues(response)
+        def initialize
+          @alerts_count = 0
+          @critical_alerts_count = 0
+          @high_alerts_count = 0
+        end
+
+        def add_to_alert_count
+          @alerts_count += 1
+        end
+
+        def add_to_critical_alerts_count
+          @critical_alerts_count += 1
+        end
+
+        def add_to_high_alerts_count
+          @high_alerts_count += 1
+        end
+      end
+
+      def code_scanned_issues(response)
+        code_scan_report = {}
+
+        code_scanned_alerts = config.github.code_scanned_issues
+
+        code_scanned_alerts.each do |alert|
+          repo_name = alert.repository.name
+          severity = alert.rule.severity
+          alert_counter = code_scan_report[repo_name] || CodeScanAlertCounter.new
+          alert_counter.add_to_alert_count
+          alert_counter.add_to_high_alerts_count if %w[warning high].include?(severity)
+          alert_counter.add_to_critical_alerts_count if severity == 'critical'
+
+          code_scan_report[repo_name] = alert_counter
+        end
+
+        total_alerts_count = code_scan_report.values.collect(&:alerts_count).sum
+        total_high_alerts_count = code_scan_report.values.collect(&:high_alerts_count).sum
+        total_critical_alerts_count = code_scan_report.values.collect(&:critical_alerts_count).sum
+
+        summary = "*#{total_alerts_count} Code Scanning Alerts Total(#{total_high_alerts_count} HIGH;#{total_critical_alerts_count} CRITICAL)*"
+
+        response.reply("#{summary}: \n #{format_code_scan_report(code_scan_report)}")
+      end
+
+      def dependabot_issues(response)
         filter = filter_without_whitespace(response.matches[0][1])
         get_issues = true
         last_repo_listed = nil
@@ -41,7 +90,8 @@ module Lita
             if filter.downcase.include? 'this week'
               categorize_alerts_by_severity_filter_for_this_week(
                 node_alerts, repo_to_alert_count, repo_name,
-                repo_to_high_alert_count, repo_to_critical_alert_count, repo_to_reported_packages)
+                repo_to_high_alert_count, repo_to_critical_alert_count, repo_to_reported_packages
+              )
             else
               categorize_alerts_by_severity(node_alerts, repo_to_alert_count, repo_name,
                                             repo_to_high_alert_count, repo_to_critical_alert_count,
@@ -59,6 +109,12 @@ module Lita
       end
 
       private
+
+      def format_code_scan_report(code_scan_report)
+        code_scan_report.map do |repo, alert_counter|
+          "<https://github.com/zooniverse/#{repo}/security/code-scanning|#{repo}> -- #{repo} (#{alert_counter.high_alerts_count} HIGH; #{alert_counter.critical_alerts_count} CRITICAL) #{alert_counter.alerts_count} flagged scans"
+        end.join("\n")
+      end
 
       def filter_without_whitespace(filter)
         filter.strip

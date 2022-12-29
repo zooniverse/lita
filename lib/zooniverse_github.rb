@@ -132,6 +132,10 @@ module Lita
         octokit_client.post '/graphql', { query: query }.to_json
       end
 
+      def code_scanned_issues
+        octokit_client.get('/orgs/zooniverse/code-scanning/alerts', { state: 'open', per_page: 100 })
+      end
+
       def run_workflow(repo_name, workflow_file_name, ref, options = {})
         octokit_client.workflow_dispatch(repo_name, workflow_file_name, ref, options)
       end
