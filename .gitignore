@@ -5,3 +5,4 @@
 data/redis/*
 vendor/*
 .DS_Store
+creds.json

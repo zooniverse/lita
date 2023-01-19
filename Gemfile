@@ -20,6 +20,8 @@ gem "lita-cron"
 gem "httparty"
 gem "octokit"
 gem "a_vs_an"
+gem 'google-apis-calendar_v3'
+gem 'googleauth'
 
 gem 'dotenv'
 
