@@ -25,20 +25,23 @@ module Lita
         now = Time.now.iso8601
         tomorrow = (Time.now + (60 * 60 * 24)).iso8601
         # begin
-          result = calendar.list_events(ENV['TEST_CAL_ID'],
-                                        time_min: now,
-                                        time_max: tomorrow,
-                                        page_token: page_token,
-                                        fields: 'items(id,summary,start),next_page_token')
-          result.items.each do |e|
-            puts e.summary + ' ' + e.start.date_time.to_s + "\n"
-          end
-          puts result
+        result = calendar.list_events(ENV['TEST_CAL_ID'],
+                                      time_min: now,
+                                      time_max: tomorrow,
+                                      page_token: page_token,
+                                      show_deleted: false,
+                                      fields: 'items(id,summary,start,html_link),next_page_token')
+        cal_events = ''
+        result.items.each do |e|
+          # puts e.to_h
+          cal_events = "#{cal_events}#{e&.summary} #{e&.start&.date_time&.to_s} #{e&.html_link}\n"
+        end
+        puts cal_events
         # rescue StandardError => e
         #   puts e
         # end
 
-        response.reply("hello")
+        response.reply(cal_events)
       end
 
       Lita.register_handler(self)
