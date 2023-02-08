@@ -31,10 +31,9 @@ module Lita
                                       page_token: page_token,
                                       show_deleted: false,
                                       fields: 'items(id,summary,start,html_link),next_page_token')
-        cal_events = ''
+        cal_events = "*There are #{result.items.length} events today* \n"
         result.items.each do |e|
-          # puts e.to_h
-          cal_events = "#{cal_events}#{e&.summary} #{e&.start&.date_time&.to_s} #{e&.html_link}\n"
+          cal_events += "<#{e&.html_link}|#{e&.summary}> #{e&.start&.date_time&.to_s}\n"
         end
         puts cal_events
         # rescue StandardError => e
