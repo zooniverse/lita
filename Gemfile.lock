@@ -97,7 +97,7 @@ GEM
     puma (5.6.4)
       nio4r (~> 2.0)
     racc (1.6.1)
-    rack (3.0.4.1)
+    rack (3.0.4.2)
     rainbow (3.1.1)
     rb-readline (0.5.5)
     read_it (0.0.2)
