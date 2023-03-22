@@ -1,7 +1,7 @@
 GIT
   remote: https://github.com/zooniverse/lita-slack.git
-  revision: 5704af58c45f43ac109fc4078f09ab106932cd73
-  ref: 5704af5
+  revision: f88716b6667483ace4677c310b95bd5885b4a9f9
+  ref: f88716b
   branch: lita-version
   specs:
     lita-slack (1.8.0)
