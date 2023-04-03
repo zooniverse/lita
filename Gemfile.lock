@@ -1,4 +1,13 @@
 GIT
+  remote: https://github.com/faye/faye-websocket-ruby.git
+  revision: d9428fae72240bfa8b98627a0414524814b92f22
+  branch: main
+  specs:
+    faye-websocket (0.11.1)
+      eventmachine (>= 0.12.0)
+      websocket-driver (>= 0.5.1)
+
+GIT
   remote: https://github.com/zooniverse/lita-slack.git
   revision: f88716b6667483ace4677c310b95bd5885b4a9f9
   ref: f88716b
@@ -27,9 +36,6 @@ GEM
       faraday-net_http (~> 2.0)
       ruby2_keywords (>= 0.0.4)
     faraday-net_http (2.0.3)
-    faye-websocket (0.11.1)
-      eventmachine (>= 0.12.0)
-      websocket-driver (>= 0.5.1)
     http_router (0.11.2)
       rack (>= 1.0.0)
       url_mount (~> 0.2.1)
@@ -155,6 +161,7 @@ PLATFORMS
 DEPENDENCIES
   a_vs_an
   dotenv
+  faye-websocket!
   httparty
   lita
   lita-applause
