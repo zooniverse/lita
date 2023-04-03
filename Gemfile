@@ -20,6 +20,7 @@ gem "lita-cron"
 gem "httparty"
 gem "octokit"
 gem "a_vs_an"
+gem 'faye-websocket', git: 'https://github.com/faye/faye-websocket-ruby.git', branch: 'main'
 
 gem 'dotenv'
 
