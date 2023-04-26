@@ -43,7 +43,7 @@ module Lita
         # to ensure we pickup the most recently submited job run
         gh_api_wait_time = rand(2..4)
         sleep(gh_api_wait_time)
-        workflow_run = config.github.get_latest_workflow_run(repo_name, 'deploy.yml', 'main')
+        workflow_run = config.github.get_latest_workflow_run(repo_name, 'deploy_production.yml', 'main')
         response.reply('Subject-Set-Search-API Rebuild initiated:')
         response.reply("Details at #{workflow_run[:html_url]}")
       end
