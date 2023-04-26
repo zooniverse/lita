@@ -38,7 +38,7 @@ module Lita
 
       def rebuild_subject_set_search_api(response)
         repo_name = config.github.orgify_repo_name('subject-set-search-api')
-        config.github.run_workflow(repo_name, 'deploy.yml', 'main')
+        config.github.run_workflow(repo_name, 'deploy_production.yml', 'main')
         # pause for a period of seconds while the GH API syncs
         # to ensure we pickup the most recently submited job run
         gh_api_wait_time = rand(2..4)
