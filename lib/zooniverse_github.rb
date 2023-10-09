@@ -31,14 +31,14 @@ module Lita
         'zooniverse/sugar' => 'https://notifications.zooniverse.org',
         'zooniverse/talk-api' => 'https://talk.zooniverse.org',
         'zooniverse/zoo-event-stats' => 'https://stats.zooniverse.org/',
-        'zooniverse/zoo-stats-api-graphql' => 'https://graphql-stats.zooniverse.org'       
       }.freeze
 
       # Repos that do not use heads/master as their primary ref
       PRIMARY_REF_BY_REPO = {
         'zooniverse/pandora' => 'heads/main',
         'zooniverse/kade' => 'heads/main',
-        'zooniverse/bajor' => 'heads/main'
+        'zooniverse/bajor' => 'heads/main',
+        'zooniverse/eras' => 'heads/main'
       }.freeze
 
       JSON_COMMIT_ID_KEYS = %w[revision commit_id].freeze
