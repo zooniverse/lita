@@ -8,9 +8,18 @@ GIT
       websocket-driver (>= 0.5.1)
 
 GIT
+  remote: https://github.com/joshbuddy/http_router.git
+  revision: defc049bf6fa7fb80c38f605a492a6185fae90b6
+  branch: master
+  specs:
+    http_router (0.11.2)
+      rack (>= 1.0.0)
+      url_mount (~> 0.2.1)
+
+GIT
   remote: https://github.com/zooniverse/lita-slack.git
-  revision: f88716b6667483ace4677c310b95bd5885b4a9f9
-  ref: f88716b
+  revision: f686df4dafc50cfcfdd37a3e73e4c43dd3deb644
+  ref: f686df4
   branch: lita-version
   specs:
     lita-slack (1.8.0)
@@ -36,9 +45,6 @@ GEM
       faraday-net_http (~> 2.0)
       ruby2_keywords (>= 0.0.4)
     faraday-net_http (2.0.3)
-    http_router (0.11.2)
-      rack (>= 1.0.0)
-      url_mount (~> 0.2.1)
     httparty (0.21.0)
       mini_mime (>= 1.0.0)
       multi_xml (>= 0.5.2)
@@ -162,6 +168,7 @@ DEPENDENCIES
   a_vs_an
   dotenv
   faye-websocket!
+  http_router!
   httparty
   lita
   lita-applause
