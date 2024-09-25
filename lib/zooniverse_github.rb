@@ -25,7 +25,7 @@ module Lita
         'zooniverse/jobs.zooniverse.org' => 'https://jobs.zooniverse.org',
         'zooniverse/notes-from-nature-field-book' => 'https://field-book.notesfromnature.org',
         'zooniverse/pandora' => 'https://translations.zooniverse.org',
-        'zooniverse/panoptes-front-end' => 'https://www.zooniverse.org',
+        'zooniverse/panoptes-front-end' => 'https://static.zooniverse.org/www.zooniverse.org',
         'zooniverse/pfe-lab' => 'https://lab.zooniverse.org',
         'zooniverse/scribes-of-the-cairo-geniza' => 'https://www.scribesofthecairogeniza.org',
         'zooniverse/sugar' => 'https://notifications.zooniverse.org',
