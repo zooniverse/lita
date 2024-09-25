@@ -21,7 +21,7 @@ module Lita
       IRREGULAR_DOWNCASED_ORG_URLS = {
         'zooniverse/aggregation-for-caesar' => 'https://aggregation-caesar.zooniverse.org/',
         'zooniverse/anti-slavery-manuscripts' => 'https://www.antislaverymanuscripts.org',
-        'zooniverse/front-end-monorepo' => 'https://fe-project.zooniverse.org/projects',
+        'zooniverse/front-end-monorepo' => 'https://fe-root.zooniverse.org',
         'zooniverse/jobs.zooniverse.org' => 'https://jobs.zooniverse.org',
         'zooniverse/notes-from-nature-field-book' => 'https://field-book.notesfromnature.org',
         'zooniverse/pandora' => 'https://translations.zooniverse.org',
