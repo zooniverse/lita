@@ -21,11 +21,11 @@ module Lita
       IRREGULAR_DOWNCASED_ORG_URLS = {
         'zooniverse/aggregation-for-caesar' => 'https://aggregation-caesar.zooniverse.org/',
         'zooniverse/anti-slavery-manuscripts' => 'https://www.antislaverymanuscripts.org',
-        'zooniverse/front-end-monorepo' => 'https://fe-project.zooniverse.org/projects',
+        'zooniverse/front-end-monorepo' => 'https://fe-root.zooniverse.org',
         'zooniverse/jobs.zooniverse.org' => 'https://jobs.zooniverse.org',
         'zooniverse/notes-from-nature-field-book' => 'https://field-book.notesfromnature.org',
         'zooniverse/pandora' => 'https://translations.zooniverse.org',
-        'zooniverse/panoptes-front-end' => 'https://www.zooniverse.org',
+        'zooniverse/panoptes-front-end' => 'https://static.zooniverse.org/www.zooniverse.org',
         'zooniverse/pfe-lab' => 'https://lab.zooniverse.org',
         'zooniverse/scribes-of-the-cairo-geniza' => 'https://www.scribesofthecairogeniza.org',
         'zooniverse/sugar' => 'https://notifications.zooniverse.org',
