@@ -89,7 +89,7 @@ module Lita
 
             repo_name = node['name']
 
-            @repos_to_skip ||= %w[science-gossip-data Sellers Exercise CSA-Home].map(&:downcase)
+            @repos_to_skip ||= %w[astrovector CSA-Home data.galaxyzoo.org Data-digging gz_nodes_flask kSWAP iiif-annotations mapping-viz-functions mapping-viz-tools PRN-maps mobile-provisioning-profiles retirement science-gossip-data Sellers swap uscientist volumetric-viewer zoo-grommet zootools-sheets].map(&:downcase)
 
             next if @repos_to_skip.include? repo_name.downcase
 
