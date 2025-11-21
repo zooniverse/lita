@@ -35,6 +35,7 @@ module Lita
 
       # Repos that do not use heads/master as their primary ref
       PRIMARY_REF_BY_REPO = {
+        'zooniverse/panoptes-front-end' => 'heads/main',
         'zooniverse/pandora' => 'heads/main',
         'zooniverse/kade' => 'heads/main',
         'zooniverse/bajor' => 'heads/main',
