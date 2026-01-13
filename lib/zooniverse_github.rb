@@ -256,7 +256,11 @@ module Lita
       end
 
       def get_deployed_commit(repo_url)
-        deployed_status_data = fetch_deployed_status_data(repo_url)
+        deployed_status_data = if repo_url.include?('static.zooniverse.org')
+          fetch_static_deployment
+        else
+          fetch_deployed_status_data(repo_url)
+        end
 
         # if the response object looks like a json object
         if deployed_status_data.respond_to?(:keys)
@@ -299,6 +303,23 @@ module Lita
           repo_url_data = HTTParty.get(repo_url)
         end
         # 404's are obs bad and we can't really use html page responses, rather we prefer text / json
+        missing_status_response = repo_url_data.code == 404 || repo_url_data.content_type == 'text/html'
+        raise MissingStatusResponse if missing_status_response
+
+        repo_url_data
+      rescue SocketError
+        raise UnknownServiceUrl
+      end
+
+      def fetch_static_deployment
+        # Any path that is processed by the static proxy but not behind CDN
+        static_repo_url = 'https://status.zooniverse.org/'
+        custom_headers = {
+          # specific host header responds with deployed proxy version
+          'Host' => 'proxy-version',
+        }
+        repo_url_data = HTTParty.get(static_repo_url, headers: custom_headers)
+
         missing_status_response = repo_url_data.code == 404 || repo_url_data.content_type == 'text/html'
         raise MissingStatusResponse if missing_status_response
 
