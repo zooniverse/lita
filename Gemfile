@@ -20,8 +20,9 @@ gem "lita-cron"
 gem "httparty"
 gem "octokit"
 gem "a_vs_an"
-gem 'faye-websocket', git: 'https://github.com/faye/faye-websocket-ruby.git', branch: 'main'
-gem 'http_router', git: 'https://github.com/joshbuddy/http_router.git', branch: 'master'
+gem 'faye-websocket'
+gem 'http_router'
+gem 'nio4r', '~> 2.7'
 
 gem 'dotenv'
 

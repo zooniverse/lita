@@ -291,14 +291,28 @@ module Lita
       end
 
       def fetch_deployed_status_data(repo_url)
-        # try the commit_id file first
-        repo_commit_id_url = "#{repo_url}/commit_id.txt"
-        repo_url_data = HTTParty.get(repo_commit_id_url)
-        if repo_url_data.code == 404
-          # let's try the root service url for some json data
-          repo_url_data = HTTParty.get(repo_url)
+        # Static repo needs special handling
+        repo_url_data = if repo_url == 'https://static.zooniverse.org'
+          # Any path that is processed by the static proxy but NOT behind FD/CDN
+          static_repo_url = 'https://panoptes.zooniverse.org'
+          custom_headers = {
+            # specific host header responds with deployed proxy version
+            'Host' => 'proxy-version',
+          }
+          HTTParty.get(static_repo_url, headers: custom_headers)
+        else
+          # try the commit_id file first
+          repo_commit_id_url = "#{repo_url}/commit_id.txt"
+          response = HTTParty.get(repo_commit_id_url)
+          if response.code == 404
+            # let's try the root service url for some json data
+            HTTParty.get(repo_url)
+          else
+            response
+          end
         end
-        # 404's are obs bad and we can't really use html page responses, rather we prefer text / json
+
+        # Can't parse status from a 404 or HTML response
         missing_status_response = repo_url_data.code == 404 || repo_url_data.content_type == 'text/html'
         raise MissingStatusResponse if missing_status_response
 
