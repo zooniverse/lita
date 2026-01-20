@@ -294,7 +294,7 @@ module Lita
         # Static repo needs special handling
         repo_url_data = if repo_url == 'https://static.zooniverse.org'
           # Any path that is processed by the static proxy but NOT behind FD/CDN
-          static_repo_url = 'https://status.zooniverse.org/'
+          static_repo_url = 'https://panoptes.zooniverse.org'
           custom_headers = {
             # specific host header responds with deployed proxy version
             'Host' => 'proxy-version',
