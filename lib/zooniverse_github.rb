@@ -127,10 +127,51 @@ module Lita
         update_tag('zooniverse/static', 'tags/production-ingresses')
       end
 
-      def get_dependabot_issues(last_repo_listed)
-        query = last_repo_listed ? query_with_after(last_repo_listed) : query_without_after
+      def get_dependabot_issues(filter = 'all')
+        octokit_client.auto_paginate = true
 
-        octokit_client.post '/graphql', { query: query }.to_json
+        repos_to_packages = {}
+
+        octokit_client
+          .org_repos('zooniverse', type: 'all', sort: 'full_name')
+          .reject(&:archived)
+          .each do |repo|
+            alerts = octokit_client.get(
+              "/repos/zooniverse/#{repo.name}/dependabot/alerts",
+              state: 'open',
+              per_page: 100
+            )
+
+            if filter.downcase.include? 'this week'
+              alerts = alerts.select { |alert| Date.parse(alert[:created_at]) > (Date.today - 7) }
+            end
+
+            next if alerts.empty?
+
+            packages = alerts.map do |alert|
+              alert[:security_vulnerability][:package][:name]
+            end.to_set
+
+            high_severity_count = alerts.count do |alert|
+              alert[:security_vulnerability][:severity] == 'high'
+            end
+
+            critical_severity_count = alerts.count do |alert|
+              alert[:security_vulnerability][:severity] == 'critical'
+            end
+
+            repos_to_packages[repo.name] = {
+              high_severity_count: high_severity_count,
+              critical_severity_count: critical_severity_count,
+              total_alerts_count: alerts.length,
+              packages_count: packages.length
+            }
+
+          rescue Octokit::NotFound, Octokit::Forbidden
+            next
+          end
+
+        repos_to_packages
       end
 
       def code_scanned_issues
@@ -150,73 +191,6 @@ module Lita
       end
 
       private
-
-      def query_without_after
-        <<-GRAPHQL
-          {
-            organization(login: "zooniverse") {
-            repositories(orderBy: {field: NAME, direction: ASC}, first: 100) {
-              edges {
-                cursor
-                node {
-                  name
-                }
-              }
-              nodes {
-                name
-                vulnerabilityAlerts(first: 100, states: OPEN) {
-                  nodes {
-                    securityVulnerability {
-                      package {
-                        name
-                      }
-                      severity
-                    }
-                    dismissedAt
-                    fixedAt
-                    createdAt
-                  }
-                }
-              }
-            }
-          }
-        }
-        GRAPHQL
-      end
-
-      def query_with_after(after)
-        <<-GRAPHQL
-        {
-          organization(login: "zooniverse") {
-            repositories(orderBy: {field: NAME, direction: ASC}, first: 100, after: "#{after}") {
-              edges {
-                cursor
-                node {
-                  name
-                }
-              }
-              nodes {
-                name
-                vulnerabilityAlerts(first: 100, states: OPEN) {
-                  nodes {
-                    securityVulnerability {
-                      package {
-                        name
-                      }
-                      severity
-                    }
-                    dismissedAt
-                    fixedAt
-                    createdAt
-                  }
-                }
-              }
-            }
-          }
-        }
-        GRAPHQL
-      end
-
       def update_tag(full_repo_name, deploy_ref)
         head_commit_id = octokit_client.refs(full_repo_name, primary_ref(full_repo_name)).object.sha
         commit_at_tag = octokit_client.refs(full_repo_name, deploy_ref).object.sha

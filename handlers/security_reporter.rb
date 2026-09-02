@@ -33,18 +33,6 @@ module Lita
         end
       end
 
-      class DependabotAlertCounter < AlertCounter
-        attr_reader :reported_packages
-        def initialize
-          super
-          @reported_packages = Set.new
-        end
-
-        def add_reported_package(package)
-          @reported_packages << package
-        end
-      end
-
       def code_scanned_issues(response)
         code_scan_report = {}
 
@@ -71,44 +59,13 @@ module Lita
       end
 
       def dependabot_issues(response)
-        filter = filter_without_whitespace(response.matches[0][1])
-        get_issues = true
-        last_repo_listed = nil
-        dependabot_issues_report = {}
+        filter = filter_without_whitespace(response.matches[0][1]) || 'all'          
 
-        while get_issues == true
-          res = config.github.get_dependabot_issues(last_repo_listed)
+        dependabot_issues_report = config.github.get_dependabot_issues(filter)
 
-          break unless res
-
-          edges = res['data']['organization']['repositories']['edges']
-          nodes = res['data']['organization']['repositories']['nodes']
-          nodes.each do |node|
-            node_alerts = node['vulnerabilityAlerts']['nodes']
-            next if node_alerts.empty?
-
-            repo_name = node['name']
-
-            @repos_to_skip ||= %w[astrovector CSA-Home data.galaxyzoo.org Data-digging gz_nodes_flask kSWAP iiif-annotations mapping-viz-functions mapping-viz-tools PRN-maps mobile-provisioning-profiles retirement science-gossip-data Sellers swap uscientist volumetric-viewer zoo-grommet zootools-sheets].map(&:downcase)
-
-            next if @repos_to_skip.include? repo_name.downcase
-
-            if filter.downcase.include? 'this week'
-              categorize_alerts_by_severity_filter_for_this_week(
-                node_alerts, dependabot_issues_report, repo_name
-              )
-            else
-              categorize_alerts_by_severity(node_alerts, dependabot_issues_report, repo_name)
-            end
-          end
-          repo_count = edges.length
-          last_repo_listed = edges[repo_count - 1]['cursor']
-          get_issues = false if repo_count < 100
-        end
-
-        total_alerts_count = dependabot_issues_report.values.collect(&:alerts_count).sum
-        total_high_alerts_count = dependabot_issues_report.values.collect(&:high_alerts_count).sum
-        total_critical_alerts_count = dependabot_issues_report.values.collect(&:critical_alerts_count).sum
+        total_high_alerts_count = dependabot_issues_report.sum { |_, counts| counts[:high_severity_count] }
+        total_critical_alerts_count = dependabot_issues_report.sum { |_, counts| counts[:critical_severity_count] }
+        total_alerts_count = dependabot_issues_report.sum { |_, counts| counts[:total_alerts_count] }
 
         summary = "*#{total_alerts_count} Alerts Total (#{total_high_alerts_count} HIGH; #{total_critical_alerts_count} CRITICAL)*"
         response.reply("#{summary}: \n#{format_dependabot_issues_report(dependabot_issues_report)}")
@@ -126,45 +83,9 @@ module Lita
         filter.strip
       end
 
-      def categorize_alerts_by_severity_filter_for_this_week(node_alerts, dependabot_issues_report, repo_name)
-        alert_counter = dependabot_issues_report[repo_name] || DependabotAlertCounter.new
-        node_alerts.each do |alert|
-          next if Date.parse(alert['createdAt']) <= (Date.today - 7)
-
-          vulnerability = alert['securityVulnerability']
-          alert_counter.add_to_alerts_count
-
-          severity = vulnerability['severity'].downcase
-          alert_counter.add_to_high_alerts_count if severity == 'high'
-          alert_counter.add_to_critical_alerts_count if severity == 'critical'
-
-          package_name = vulnerability['package']['name'].downcase
-          alert_counter.add_reported_package(package_name)
-
-          dependabot_issues_report[repo_name] = alert_counter
-        end
-      end
-
-      def categorize_alerts_by_severity(node_alerts, dependabot_issues_report, repo_name)
-        alert_counter = dependabot_issues_report[repo_name] || DependabotAlertCounter.new
-        node_alerts.each do |alert|
-          vulnerability = alert['securityVulnerability']
-          alert_counter.add_to_alerts_count
-
-          severity = vulnerability['severity'].downcase
-          alert_counter.add_to_high_alerts_count if severity == 'high'
-          alert_counter.add_to_critical_alerts_count if severity == 'critical'
-
-          package_name = vulnerability['package']['name'].downcase
-          alert_counter.add_reported_package(package_name)
-
-          dependabot_issues_report[repo_name] = alert_counter
-        end
-      end
-
       def format_dependabot_issues_report(dependabot_issues_report)
-        dependabot_issues_report.map do |repo, counter|
-          "<https://github.com/zooniverse/#{repo}/security/dependabot|#{repo}> -- #{counter.alerts_count} (#{counter.high_alerts_count} HIGH; #{counter.critical_alerts_count} CRITICAL) #{counter.reported_packages.size} flagged packages"
+        dependabot_issues_report.map do |repo, counts|
+          "<https://github.com/zooniverse/#{repo}/security/dependabot|#{repo}> -- #{counts[:total_alerts_count]} (#{counts[:high_severity_count]} HIGH; #{counts[:critical_severity_count]} CRITICAL) #{counts[:packages_count]} flagged packages"
         end.join("\n")
       end
 
